@@ -598,6 +598,18 @@ class JazzAudioEngine {
     }
   }
 
+  /**
+   * Gently duck background music briefly while quiz SFX play, then swell back smoothly.
+   */
+  duckBriefly(durationMs = 950) {
+    if (!this.isPlaying || !this.masterGain || !this.ctx || this.volume <= 0) return;
+    const now = this.ctx.currentTime;
+    const duckLevel = Math.max(0.0001, this.volume * 0.55);
+    this.masterGain.gain.cancelScheduledValues(now);
+    this.masterGain.gain.setTargetAtTime(duckLevel, now, 0.04);
+    this.masterGain.gain.setTargetAtTime(this.volume, now + durationMs / 1000, 0.14);
+  }
+
   setTrack(index) {
     this.trackIndex = ((index % JAZZ_TRACKS.length) + JAZZ_TRACKS.length) % JAZZ_TRACKS.length;
     this.barIndex = 0;

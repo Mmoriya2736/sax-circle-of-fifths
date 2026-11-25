@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Loader2 } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Loader2, Sparkles } from 'lucide-react';
 import { jazzAudioEngine, JAZZ_TRACKS } from '../utils/jazzAudioEngine';
 
-export default function JazzAudioPlayer() {
+export default function JazzAudioPlayer({ sfxEnabled, onToggleSfx }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [trackIndex, setTrackIndex] = useState(0);
   const [volume, setVolume] = useState(0.25);
@@ -57,7 +57,7 @@ export default function JazzAudioPlayer() {
           : 'bg-slate-900/70 border-slate-800/85'
       }`}
     >
-      {/* Top row: Play/Pause + Label & Track info + Volume */}
+      {/* Top row: Play/Pause + Label & Track info + SFX Toggle + Volume */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -111,35 +111,51 @@ export default function JazzAudioPlayer() {
           </div>
         </div>
 
-        {/* Volume Slider */}
-        <div className="flex items-center gap-2 mr-auto sm:mr-0">
+        {/* Right controls: Independent SFX toggle + Music Volume Slider */}
+        <div className="flex flex-wrap items-center gap-3 mr-auto sm:mr-0">
           <button
             type="button"
-            onClick={handleToggleMute}
-            aria-label={volume === 0 ? 'בטל השתקה' : 'השתק'}
-            className="text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
+            onClick={onToggleSfx}
+            title="הפעל או השתק אפקטים קוליים של עידוד ובוז"
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-semibold border transition-all cursor-pointer ${
+              sfxEnabled
+                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/20'
+                : 'bg-slate-900/90 border-slate-700/80 text-slate-400 hover:text-slate-200'
+            }`}
           >
-            {volume === 0 ? (
-              <VolumeX className="w-4 h-4 text-slate-500" />
-            ) : (
-              <Volume2 className="w-4 h-4 text-amber-400" />
-            )}
+            <Sparkles className={`w-3.5 h-3.5 ${sfxEnabled ? 'text-emerald-400' : 'text-slate-500'}`} />
+            <span>אפקטים קוליים (עידוד/בוז)</span>
           </button>
 
-          <input
-            type="range"
-            min="0"
-            max="0.8"
-            step="0.01"
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            aria-label="עוצמת שמע"
-            dir="ltr"
-            className="brass-slider w-20 sm:w-24 cursor-pointer"
-          />
-          <span className="text-[10.5px] font-mono-music text-slate-400 w-7 text-left">
-            {Math.round((volume / 0.8) * 100)}%
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleToggleMute}
+              aria-label={volume === 0 ? 'בטל השתקה' : 'השתק'}
+              className="text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
+            >
+              {volume === 0 ? (
+                <VolumeX className="w-4 h-4 text-slate-500" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-amber-400" />
+              )}
+            </button>
+
+            <input
+              type="range"
+              min="0"
+              max="0.8"
+              step="0.01"
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              aria-label="עוצמת שמע"
+              dir="ltr"
+              className="brass-slider w-20 sm:w-24 cursor-pointer"
+            />
+            <span className="text-[10.5px] font-mono-music text-slate-400 w-7 text-left">
+              {Math.round((volume / 0.8) * 100)}%
+            </span>
+          </div>
         </div>
       </div>
 

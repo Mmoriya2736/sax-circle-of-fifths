@@ -14,6 +14,8 @@ import {
   loadPersistedData,
   savePersistedData,
 } from './utils/quizEngine';
+import { sfxEngine } from './utils/sfxEngine';
+import { jazzAudioEngine } from './utils/jazzAudioEngine';
 
 export default function App() {
   const persisted = useRef(loadPersistedData());
@@ -24,6 +26,7 @@ export default function App() {
   const [sortOrder, setSortOrder] = useState('chromatic'); // 'chromatic' | 'fifths'
   const [saxMode, setSaxMode] = useState('concert'); // 'concert' | 'eb' | 'bb'
   const [showHebrewNotes, setShowHebrewNotes] = useState(true);
+  const [sfxEnabled, setSfxEnabled] = useState(true);
   const [isCheatSheetOpen, setIsCheatSheetOpen] = useState(false);
 
   // Persisted stats & spaced-repetition state
@@ -100,6 +103,16 @@ export default function App() {
 
     const elapsedMs = Math.max(150, Date.now() - questionStartRef.current);
     const isCorrect = isAnswerCorrect(question, chosenScale);
+
+    // Play immediate Cheer or Boo SFX (gently ducking background music without interrupting it)
+    if (sfxEnabled) {
+      jazzAudioEngine.duckBriefly(isCorrect ? 950 : 1150);
+      if (isCorrect) {
+        sfxEngine.playCheer();
+      } else {
+        sfxEngine.playBoo();
+      }
+    }
 
     setSessionTotal((n) => n + 1);
     setTotalResponseMs((ms) => ms + elapsedMs);
@@ -203,8 +216,11 @@ export default function App() {
 
       {/* Main Content */}
       <main className={`relative z-10 flex-1 w-full ${showWheelPanel ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-4 sm:space-y-5 transition-all`}>
-        {/* Upbeat Tenor Saxophone Jazz Mini-Player */}
-        <JazzAudioPlayer />
+        {/* Upbeat Tenor Saxophone Jazz Mini-Player + SFX Toggle */}
+        <JazzAudioPlayer
+          sfxEnabled={sfxEnabled}
+          onToggleSfx={() => setSfxEnabled((v) => !v)}
+        />
 
         {/* Stats Bar */}
         <StatsBar
