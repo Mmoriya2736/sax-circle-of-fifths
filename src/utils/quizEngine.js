@@ -1,13 +1,11 @@
 import {
-  MAJOR_KEYS,
-  MINOR_KEYS,
-  ALL_KEYS,
-  CIRCLE_POSITIONS,
-  formatSpellingSignatureHe,
-  noteToHebrew,
+  MAJOR_SCALES,
+  MINOR_SCALES,
+  ALL_SCALES,
+  formatSignatureHe,
 } from '../data/circleOfFifths';
 
-const STORAGE_KEY = 'brass_and_fifths_he_state_v1';
+const STORAGE_KEY = 'sax_key_signatures_he_v2';
 
 export function loadPersistedData() {
   try {
@@ -34,20 +32,20 @@ export function savePersistedData(data) {
 }
 
 export function getPoolForScope(scope) {
-  if (scope === 'major') return MAJOR_KEYS;
-  if (scope === 'minor') return MINOR_KEYS;
-  return ALL_KEYS;
+  if (scope === 'major') return MAJOR_SCALES;
+  if (scope === 'minor') return MINOR_SCALES;
+  return ALL_SCALES;
 }
 
 /**
- * Weighted random key selection using lightweight spaced-repetition bias.
- * Missed keys appear more frequently until answered correctly twice in a row.
+ * Weighted random scale selection using lightweight spaced-repetition bias.
+ * Missed scales appear more frequently until answered correctly twice in a row.
  */
-function pickWeightedKey(pool, weakKeys, lastKeyId) {
-  const candidates = pool.length > 1 ? pool.filter((k) => k.id !== lastKeyId) : pool;
+function pickWeightedScale(pool, weakKeys, lastScaleId) {
+  const candidates = pool.length > 1 ? pool.filter((s) => s.id !== lastScaleId) : pool;
 
-  const weights = candidates.map((k) => {
-    const weak = weakKeys[k.id];
+  const weights = candidates.map((s) => {
+    const weak = weakKeys[s.id];
     if (!weak) return 1;
     return Math.min(4.5 + (weak.misses || 1) * 0.6, 7.5);
   });
@@ -63,132 +61,18 @@ function pickWeightedKey(pool, weakKeys, lastKeyId) {
 }
 
 /**
- * Generate a Hebrew quiz question based on scope ('major' | 'minor' | 'mixed')
- * and promptStyle ('visual' | 'text' | 'both').
+ * Generate a key-signature-only Hebrew text question.
  */
-export function generateQuestion({ scope, promptStyle, weakKeys, lastKeyId }) {
+export function generateQuestion({ scope, weakKeys, lastScaleId }) {
   const pool = getPoolForScope(scope);
-  const targetKey = pickWeightedKey(pool, weakKeys, lastKeyId);
-  const isWeakReview = Boolean(weakKeys[targetKey.id]);
-
-  const mode =
-    promptStyle === 'both'
-      ? Math.random() < 0.5
-        ? 'visual'
-        : 'text'
-      : promptStyle;
-
-  const spellingIndex =
-    targetKey.spellings.length > 1 ? (Math.random() < 0.68 ? 0 : 1) : 0;
-  const activeSpelling = targetKey.spellings[spellingIndex];
-
-  if (mode === 'visual') {
-    const isMajor = targetKey.quality === 'major';
-    return {
-      id: `${targetKey.id}-${Date.now()}`,
-      mode: 'visual',
-      clueType: 'visual',
-      targetKey,
-      activeSpelling,
-      isWeakReview,
-      badge: isMajor ? 'טבעת חיצונית — מז\'ור' : 'טבעת פנימית — מינור מקביל',
-      promptParts: {
-        prefix: isMajor
-          ? 'זהה את הסולם המז\'ורי (הטבעת החיצונית) המסומן במעגל'
-          : 'זהה את הסולם המינורי (הטבעת הפנימית) המסומן במעגל',
-        ltrToken: null,
-        suffix: null,
-      },
-      promptSub:
-        targetKey.spellings.length > 1
-          ? 'מיקום אנהרמוני — בחירת הכפתור המשותף תיחשב נכונה'
-          : 'בחר את הסולם המתאים מלוח הכפתורים',
-      highlightPosition: targetKey.position,
-      highlightRing: targetKey.quality,
-    };
-  }
-
-  // Text clue variants
-  const clueTypes = ['signature', 'signature', 'relative'];
-  if (activeSpelling.accidentalCount >= 1) {
-    clueTypes.push('accidentals');
-  }
-  const chosenType = clueTypes[Math.floor(Math.random() * clueTypes.length)];
-
-  if (chosenType === 'relative') {
-    const oppositePos = CIRCLE_POSITIONS[targetKey.position];
-    const oppositeKey =
-      targetKey.quality === 'major' ? oppositePos.minor : oppositePos.major;
-    const oppositeSpelling = oppositeKey.spellings[spellingIndex] || oppositeKey.spellings[0];
-    const oppBaseNote = oppositeSpelling.short.replace(/m$/, '');
-    const oppQualityHe = targetKey.quality === 'major' ? 'מינור' : 'מז\'ור';
-
-    return {
-      id: `${targetKey.id}-${Date.now()}`,
-      mode: 'text',
-      clueType: 'relative',
-      targetKey,
-      activeSpelling,
-      isWeakReview,
-      badge: targetKey.quality === 'major' ? 'מז\'ור מקביל' : 'מינור מקביל',
-      promptParts: {
-        prefix:
-          targetKey.quality === 'major'
-            ? 'מהו הסולם המז\'ורי המקביל ל-'
-            : 'מהו הסולם המינורי המקביל ל-',
-        ltrToken: oppBaseNote,
-        suffix: ` ${oppQualityHe}?`,
-      },
-      promptSub: `חולק את אותה חתימת מפתח (${formatSpellingSignatureHe(activeSpelling)})`,
-      highlightPosition: null,
-      highlightRing: null,
-    };
-  }
-
-  if (chosenType === 'accidentals') {
-    const qualityAdj = targetKey.quality === 'major' ? 'מז\'ורי' : 'מינורי';
-    return {
-      id: `${targetKey.id}-${Date.now()}`,
-      mode: 'text',
-      clueType: 'accidentals',
-      targetKey,
-      activeSpelling,
-      isWeakReview,
-      badge: `סימני היתק — ${targetKey.quality === 'major' ? 'מז\'ור' : 'מינור'}`,
-      promptParts: {
-        prefix: `איזה סולם ${qualityAdj} מכיל את סימני ההיתק:`,
-        ltrToken: activeSpelling.accidentals.join('  '),
-        suffix: '?',
-      },
-      promptSub: `בעברית: ${activeSpelling.accidentals.map(noteToHebrew).join(', ')}`,
-      highlightPosition: null,
-      highlightRing: null,
-    };
-  }
-
-  // Key signature count clue
-  const qualityAdj = targetKey.quality === 'major' ? 'מז\'ורי' : 'מינורי';
-  const sigHe = formatSpellingSignatureHe(activeSpelling);
-  const promptText =
-    activeSpelling.accidentalCount === 0
-      ? `איזה סולם ${qualityAdj} הוא ${sigHe}?`
-      : `איזה סולם ${qualityAdj} מכיל ${sigHe}?`;
+  const targetScale = pickWeightedScale(pool, weakKeys, lastScaleId);
+  const isWeakReview = Boolean(weakKeys[targetScale.id]);
 
   return {
-    id: `${targetKey.id}-${Date.now()}`,
-    mode: 'text',
-    clueType: 'signature',
-    targetKey,
-    activeSpelling,
+    id: `${targetScale.id}-${Date.now()}`,
+    targetScale,
     isWeakReview,
-    badge: `חתימת מפתח — ${targetKey.quality === 'major' ? 'מז\'ור' : 'מינור'}`,
-    promptParts: {
-      prefix: promptText,
-      ltrToken: null,
-      suffix: null,
-    },
-    promptSub: `בחר את הסולם ה${qualityAdj} המתאים מהרשימה`,
-    highlightPosition: null,
-    highlightRing: null,
+    signaturePhrase: formatSignatureHe(targetScale),
+    isZero: targetScale.accidentalCount === 0,
   };
 }

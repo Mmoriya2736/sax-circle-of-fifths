@@ -1,7 +1,6 @@
 /**
- * Complete Circle of Fifths music theory data model with Hebrew terminology.
- * 12 positions (0 = 12 o'clock / C Major & A Minor, clockwise by fifths).
- * Includes full enharmonic mappings for 5-7 sharps and 5-7 flats.
+ * Complete Key Signatures data model for all 15 Major scales and 15 Minor scales
+ * covering 0-7 sharps (♯) and 0-7 flats (♭), including all enharmonic equivalents.
  */
 
 const NOTE_TO_HEBREW = {
@@ -14,652 +13,452 @@ const NOTE_TO_HEBREW = {
   B: 'סי',
 };
 
-/**
- * Convert an international note (e.g. "F♯", "B♭", "C") to Hebrew note name (e.g. "פה♯", "סי♭", "דו").
- */
 export function noteToHebrew(note) {
   const base = NOTE_TO_HEBREW[note[0]] || note[0];
   const accidental = note.slice(1);
   return `${base}${accidental}`;
 }
 
-export const CIRCLE_POSITIONS = [
+/**
+ * 15 signature slots ordered logically:
+ * 0 (none), 1♯..7♯ (sharps), 1♭..7♭ (flats).
+ */
+export const SIGNATURE_ROWS = [
   {
-    position: 0,
+    accidentalType: 'none',
+    accidentalCount: 0,
+    circlePosition: 0,
+    circleOrder: 0,
+    accidentals: [],
     major: {
-      id: 'major-0',
+      id: 'maj-C',
       label: 'C',
-      hebrewSubtitle: 'דו מז\'ור',
       hebrewShort: 'דו',
-      primaryName: 'C מז\'ור',
-      chromaticIndex: 0,
-      spellings: [
-        {
-          name: 'C מז\'ור',
-          hebrewNoteName: 'דו מז\'ור',
-          short: 'C',
-          accidentalType: 'none',
-          accidentalCount: 0,
-          accidentals: [],
-          notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
-        },
-      ],
+      hebrewFull: "דו מז'ור",
+      chromaticRank: 0,
+      notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
     },
     minor: {
-      id: 'minor-0',
+      id: 'min-Am',
       label: 'Am',
-      hebrewSubtitle: 'לה מינור',
       hebrewShort: 'לה מינור',
-      primaryName: 'A מינור',
-      chromaticIndex: 9,
-      spellings: [
-        {
-          name: 'A מינור',
-          hebrewNoteName: 'לה מינור',
-          short: 'Am',
-          accidentalType: 'none',
-          accidentalCount: 0,
-          accidentals: [],
-          notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
-        },
-      ],
+      hebrewFull: 'לה מינור',
+      chromaticRank: 11,
+      notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
     },
   },
+  // 1# to 7#
   {
-    position: 1,
+    accidentalType: 'sharp',
+    accidentalCount: 1,
+    circlePosition: 1,
+    circleOrder: 1,
+    accidentals: ['F♯'],
     major: {
-      id: 'major-1',
+      id: 'maj-G',
       label: 'G',
-      hebrewSubtitle: 'סול מז\'ור',
       hebrewShort: 'סול',
-      primaryName: 'G מז\'ור',
-      chromaticIndex: 7,
-      spellings: [
-        {
-          name: 'G מז\'ור',
-          hebrewNoteName: 'סול מז\'ור',
-          short: 'G',
-          accidentalType: 'sharp',
-          accidentalCount: 1,
-          accidentals: ['F♯'],
-          notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F♯'],
-        },
-      ],
+      hebrewFull: "סול מז'ור",
+      chromaticRank: 9,
+      notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F♯'],
     },
     minor: {
-      id: 'minor-1',
+      id: 'min-Em',
       label: 'Em',
-      hebrewSubtitle: 'מי מינור',
       hebrewShort: 'מי מינור',
-      primaryName: 'E מינור',
-      chromaticIndex: 4,
-      spellings: [
-        {
-          name: 'E מינור',
-          hebrewNoteName: 'מי מינור',
-          short: 'Em',
-          accidentalType: 'sharp',
-          accidentalCount: 1,
-          accidentals: ['F♯'],
-          notes: ['E', 'F♯', 'G', 'A', 'B', 'C', 'D'],
-        },
-      ],
+      hebrewFull: 'מי מינור',
+      chromaticRank: 5,
+      notes: ['E', 'F♯', 'G', 'A', 'B', 'C', 'D'],
     },
   },
   {
-    position: 2,
+    accidentalType: 'sharp',
+    accidentalCount: 2,
+    circlePosition: 2,
+    circleOrder: 2,
+    accidentals: ['F♯', 'C♯'],
     major: {
-      id: 'major-2',
+      id: 'maj-D',
       label: 'D',
-      hebrewSubtitle: 'רה מז\'ור',
       hebrewShort: 'רה',
-      primaryName: 'D מז\'ור',
-      chromaticIndex: 2,
-      spellings: [
-        {
-          name: 'D מז\'ור',
-          hebrewNoteName: 'רה מז\'ור',
-          short: 'D',
-          accidentalType: 'sharp',
-          accidentalCount: 2,
-          accidentals: ['F♯', 'C♯'],
-          notes: ['D', 'E', 'F♯', 'G', 'A', 'B', 'C♯'],
-        },
-      ],
+      hebrewFull: "רה מז'ור",
+      chromaticRank: 3,
+      notes: ['D', 'E', 'F♯', 'G', 'A', 'B', 'C♯'],
     },
     minor: {
-      id: 'minor-2',
+      id: 'min-Bm',
       label: 'Bm',
-      hebrewSubtitle: 'סי מינור',
       hebrewShort: 'סי מינור',
-      primaryName: 'B מינור',
-      chromaticIndex: 11,
-      spellings: [
-        {
-          name: 'B מינור',
-          hebrewNoteName: 'סי מינור',
-          short: 'Bm',
-          accidentalType: 'sharp',
-          accidentalCount: 2,
-          accidentals: ['F♯', 'C♯'],
-          notes: ['B', 'C♯', 'D', 'E', 'F♯', 'G', 'A'],
-        },
-      ],
+      hebrewFull: 'סי מינור',
+      chromaticRank: 14,
+      notes: ['B', 'C♯', 'D', 'E', 'F♯', 'G', 'A'],
     },
   },
   {
-    position: 3,
+    accidentalType: 'sharp',
+    accidentalCount: 3,
+    circlePosition: 3,
+    circleOrder: 3,
+    accidentals: ['F♯', 'C♯', 'G♯'],
     major: {
-      id: 'major-3',
+      id: 'maj-A',
       label: 'A',
-      hebrewSubtitle: 'לה מז\'ור',
       hebrewShort: 'לה',
-      primaryName: 'A מז\'ור',
-      chromaticIndex: 9,
-      spellings: [
-        {
-          name: 'A מז\'ור',
-          hebrewNoteName: 'לה מז\'ור',
-          short: 'A',
-          accidentalType: 'sharp',
-          accidentalCount: 3,
-          accidentals: ['F♯', 'C♯', 'G♯'],
-          notes: ['A', 'B', 'C♯', 'D', 'E', 'F♯', 'G♯'],
-        },
-      ],
+      hebrewFull: "לה מז'ור",
+      chromaticRank: 11,
+      notes: ['A', 'B', 'C♯', 'D', 'E', 'F♯', 'G♯'],
     },
     minor: {
-      id: 'minor-3',
+      id: 'min-F#m',
       label: 'F♯m',
-      hebrewSubtitle: 'פה♯ מינור',
       hebrewShort: 'פה♯ מינור',
-      primaryName: 'F♯ מינור',
-      chromaticIndex: 6,
-      spellings: [
-        {
-          name: 'F♯ מינור',
-          hebrewNoteName: 'פה♯ מינור',
-          short: 'F♯m',
-          accidentalType: 'sharp',
-          accidentalCount: 3,
-          accidentals: ['F♯', 'C♯', 'G♯'],
-          notes: ['F♯', 'G♯', 'A', 'B', 'C♯', 'D', 'E'],
-        },
-      ],
+      hebrewFull: 'פה♯ מינור',
+      chromaticRank: 7,
+      notes: ['F♯', 'G♯', 'A', 'B', 'C♯', 'D', 'E'],
     },
   },
   {
-    position: 4,
+    accidentalType: 'sharp',
+    accidentalCount: 4,
+    circlePosition: 4,
+    circleOrder: 4,
+    accidentals: ['F♯', 'C♯', 'G♯', 'D♯'],
     major: {
-      id: 'major-4',
+      id: 'maj-E',
       label: 'E',
-      hebrewSubtitle: 'מי מז\'ור',
       hebrewShort: 'מי',
-      primaryName: 'E מז\'ור',
-      chromaticIndex: 4,
-      spellings: [
-        {
-          name: 'E מז\'ור',
-          hebrewNoteName: 'מי מז\'ור',
-          short: 'E',
-          accidentalType: 'sharp',
-          accidentalCount: 4,
-          accidentals: ['F♯', 'C♯', 'G♯', 'D♯'],
-          notes: ['E', 'F♯', 'G♯', 'A', 'B', 'C♯', 'D♯'],
-        },
-      ],
+      hebrewFull: "מי מז'ור",
+      chromaticRank: 5,
+      notes: ['E', 'F♯', 'G♯', 'A', 'B', 'C♯', 'D♯'],
     },
     minor: {
-      id: 'minor-4',
+      id: 'min-C#m',
       label: 'C♯m',
-      hebrewSubtitle: 'דו♯ מינור',
       hebrewShort: 'דו♯ מינור',
-      primaryName: 'C♯ מינור',
-      chromaticIndex: 1,
-      spellings: [
-        {
-          name: 'C♯ מינור',
-          hebrewNoteName: 'דו♯ מינור',
-          short: 'C♯m',
-          accidentalType: 'sharp',
-          accidentalCount: 4,
-          accidentals: ['F♯', 'C♯', 'G♯', 'D♯'],
-          notes: ['C♯', 'D♯', 'E', 'F♯', 'G♯', 'A', 'B'],
-        },
-      ],
+      hebrewFull: 'דו♯ מינור',
+      chromaticRank: 1,
+      notes: ['C♯', 'D♯', 'E', 'F♯', 'G♯', 'A', 'B'],
     },
   },
   {
-    position: 5,
+    accidentalType: 'sharp',
+    accidentalCount: 5,
+    circlePosition: 5,
+    circleOrder: 5,
+    accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯'],
     major: {
-      id: 'major-5',
-      label: 'B / C♭',
-      hebrewSubtitle: 'סי / דו♭',
-      hebrewShort: 'סי / דו♭',
-      primaryName: 'B / C♭ מז\'ור',
-      chromaticIndex: 11,
-      spellings: [
-        {
-          name: 'B מז\'ור',
-          hebrewNoteName: 'סי מז\'ור',
-          short: 'B',
-          accidentalType: 'sharp',
-          accidentalCount: 5,
-          accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯'],
-          notes: ['B', 'C♯', 'D♯', 'E', 'F♯', 'G♯', 'A♯'],
-        },
-        {
-          name: 'C♭ מז\'ור',
-          hebrewNoteName: 'דו♭ מז\'ור',
-          short: 'C♭',
-          accidentalType: 'flat',
-          accidentalCount: 7,
-          accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭', 'C♭', 'F♭'],
-          notes: ['C♭', 'D♭', 'E♭', 'F♭', 'G♭', 'A♭', 'B♭'],
-        },
-      ],
+      id: 'maj-B',
+      label: 'B',
+      hebrewShort: 'סי',
+      hebrewFull: "סי מז'ור",
+      chromaticRank: 13,
+      notes: ['B', 'C♯', 'D♯', 'E', 'F♯', 'G♯', 'A♯'],
     },
     minor: {
-      id: 'minor-5',
-      label: 'G♯m / A♭m',
-      hebrewSubtitle: 'סול♯ / לה♭ מינור',
-      hebrewShort: 'סול♯ / לה♭',
-      primaryName: 'G♯ / A♭ מינור',
-      chromaticIndex: 8,
-      spellings: [
-        {
-          name: 'G♯ מינור',
-          hebrewNoteName: 'סול♯ מינור',
-          short: 'G♯m',
-          accidentalType: 'sharp',
-          accidentalCount: 5,
-          accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯'],
-          notes: ['G♯', 'A♯', 'B', 'C♯', 'D♯', 'E', 'F♯'],
-        },
-        {
-          name: 'A♭ מינור',
-          hebrewNoteName: 'לה♭ מינור',
-          short: 'A♭m',
-          accidentalType: 'flat',
-          accidentalCount: 7,
-          accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭', 'C♭', 'F♭'],
-          notes: ['A♭', 'B♭', 'C♭', 'D♭', 'E♭', 'F♭', 'G♭'],
-        },
-      ],
+      id: 'min-G#m',
+      label: 'G♯m',
+      hebrewShort: 'סול♯ מינור',
+      hebrewFull: 'סול♯ מינור',
+      chromaticRank: 9,
+      notes: ['G♯', 'A♯', 'B', 'C♯', 'D♯', 'E', 'F♯'],
     },
   },
   {
-    position: 6,
+    accidentalType: 'sharp',
+    accidentalCount: 6,
+    circlePosition: 6,
+    circleOrder: 6,
+    accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯', 'E♯'],
     major: {
-      id: 'major-6',
-      label: 'F♯ / G♭',
-      hebrewSubtitle: 'פה♯ / סול♭',
-      hebrewShort: 'פה♯ / סול♭',
-      primaryName: 'F♯ / G♭ מז\'ור',
-      chromaticIndex: 6,
-      spellings: [
-        {
-          name: 'F♯ מז\'ור',
-          hebrewNoteName: 'פה♯ מז\'ור',
-          short: 'F♯',
-          accidentalType: 'sharp',
-          accidentalCount: 6,
-          accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯', 'E♯'],
-          notes: ['F♯', 'G♯', 'A♯', 'B', 'C♯', 'D♯', 'E♯'],
-        },
-        {
-          name: 'G♭ מז\'ור',
-          hebrewNoteName: 'סול♭ מז\'ור',
-          short: 'G♭',
-          accidentalType: 'flat',
-          accidentalCount: 6,
-          accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭', 'C♭'],
-          notes: ['G♭', 'A♭', 'B♭', 'C♭', 'D♭', 'E♭', 'F'],
-        },
-      ],
+      id: 'maj-F#',
+      label: 'F♯',
+      hebrewShort: 'פה♯',
+      hebrewFull: "פה♯ מז'ור",
+      chromaticRank: 7,
+      notes: ['F♯', 'G♯', 'A♯', 'B', 'C♯', 'D♯', 'E♯'],
     },
     minor: {
-      id: 'minor-6',
-      label: 'D♯m / E♭m',
-      hebrewSubtitle: 'רה♯ / מי♭ מינור',
-      hebrewShort: 'רה♯ / מי♭',
-      primaryName: 'D♯ / E♭ מינור',
-      chromaticIndex: 3,
-      spellings: [
-        {
-          name: 'D♯ מינור',
-          hebrewNoteName: 'רה♯ מינור',
-          short: 'D♯m',
-          accidentalType: 'sharp',
-          accidentalCount: 6,
-          accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯', 'E♯'],
-          notes: ['D♯', 'E♯', 'F♯', 'G♯', 'A♯', 'B', 'C♯'],
-        },
-        {
-          name: 'E♭ מינור',
-          hebrewNoteName: 'מי♭ מינור',
-          short: 'E♭m',
-          accidentalType: 'flat',
-          accidentalCount: 6,
-          accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭', 'C♭'],
-          notes: ['E♭', 'F', 'G♭', 'A♭', 'B♭', 'C♭', 'D♭'],
-        },
-      ],
+      id: 'min-D#m',
+      label: 'D♯m',
+      hebrewShort: 'רה♯ מינור',
+      hebrewFull: 'רה♯ מינור',
+      chromaticRank: 3,
+      notes: ['D♯', 'E♯', 'F♯', 'G♯', 'A♯', 'B', 'C♯'],
     },
   },
   {
-    position: 7,
+    accidentalType: 'sharp',
+    accidentalCount: 7,
+    circlePosition: 7,
+    circleOrder: 7,
+    accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯', 'E♯', 'B♯'],
     major: {
-      id: 'major-7',
-      label: 'D♭ / C♯',
-      hebrewSubtitle: 'רה♭ / דו♯',
-      hebrewShort: 'רה♭ / דו♯',
-      primaryName: 'D♭ / C♯ מז\'ור',
-      chromaticIndex: 1,
-      spellings: [
-        {
-          name: 'D♭ מז\'ור',
-          hebrewNoteName: 'רה♭ מז\'ור',
-          short: 'D♭',
-          accidentalType: 'flat',
-          accidentalCount: 5,
-          accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭'],
-          notes: ['D♭', 'E♭', 'F', 'G♭', 'A♭', 'B♭', 'C'],
-        },
-        {
-          name: 'C♯ מז\'ור',
-          hebrewNoteName: 'דו♯ מז\'ור',
-          short: 'C♯',
-          accidentalType: 'sharp',
-          accidentalCount: 7,
-          accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯', 'E♯', 'B♯'],
-          notes: ['C♯', 'D♯', 'E♯', 'F♯', 'G♯', 'A♯', 'B♯'],
-        },
-      ],
+      id: 'maj-C#',
+      label: 'C♯',
+      hebrewShort: 'דו♯',
+      hebrewFull: "דו♯ מז'ור",
+      chromaticRank: 1,
+      notes: ['C♯', 'D♯', 'E♯', 'F♯', 'G♯', 'A♯', 'B♯'],
     },
     minor: {
-      id: 'minor-7',
-      label: 'B♭m / A♯m',
-      hebrewSubtitle: 'סי♭ / לה♯ מינור',
-      hebrewShort: 'סי♭ / לה♯',
-      primaryName: 'B♭ / A♯ מינור',
-      chromaticIndex: 10,
-      spellings: [
-        {
-          name: 'B♭ מינור',
-          hebrewNoteName: 'סי♭ מינור',
-          short: 'B♭m',
-          accidentalType: 'flat',
-          accidentalCount: 5,
-          accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭'],
-          notes: ['B♭', 'C', 'D♭', 'E♭', 'F', 'G♭', 'A♭'],
-        },
-        {
-          name: 'A♯ מינור',
-          hebrewNoteName: 'לה♯ מינור',
-          short: 'A♯m',
-          accidentalType: 'sharp',
-          accidentalCount: 7,
-          accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯', 'E♯', 'B♯'],
-          notes: ['A♯', 'B♯', 'C♯', 'D♯', 'E♯', 'F♯', 'G♯'],
-        },
-      ],
+      id: 'min-A#m',
+      label: 'A♯m',
+      hebrewShort: 'לה♯ מינור',
+      hebrewFull: 'לה♯ מינור',
+      chromaticRank: 12,
+      notes: ['A♯', 'B♯', 'C♯', 'D♯', 'E♯', 'F♯', 'G♯'],
     },
   },
+  // 1b to 7b
   {
-    position: 8,
+    accidentalType: 'flat',
+    accidentalCount: 1,
+    circlePosition: 11,
+    circleOrder: 14,
+    accidentals: ['B♭'],
     major: {
-      id: 'major-8',
-      label: 'A♭',
-      hebrewSubtitle: 'לה♭ מז\'ור',
-      hebrewShort: 'לה♭',
-      primaryName: 'A♭ מז\'ור',
-      chromaticIndex: 8,
-      spellings: [
-        {
-          name: 'A♭ מז\'ור',
-          hebrewNoteName: 'לה♭ מז\'ור',
-          short: 'A♭',
-          accidentalType: 'flat',
-          accidentalCount: 4,
-          accidentals: ['B♭', 'E♭', 'A♭', 'D♭'],
-          notes: ['A♭', 'B♭', 'C', 'D♭', 'E♭', 'F', 'G'],
-        },
-      ],
-    },
-    minor: {
-      id: 'minor-8',
-      label: 'Fm',
-      hebrewSubtitle: 'פה מינור',
-      hebrewShort: 'פה מינור',
-      primaryName: 'F מינור',
-      chromaticIndex: 5,
-      spellings: [
-        {
-          name: 'F מינור',
-          hebrewNoteName: 'פה מינור',
-          short: 'Fm',
-          accidentalType: 'flat',
-          accidentalCount: 4,
-          accidentals: ['B♭', 'E♭', 'A♭', 'D♭'],
-          notes: ['F', 'G', 'A♭', 'B♭', 'C', 'D♭', 'E♭'],
-        },
-      ],
-    },
-  },
-  {
-    position: 9,
-    major: {
-      id: 'major-9',
-      label: 'E♭',
-      hebrewSubtitle: 'מי♭ מז\'ור',
-      hebrewShort: 'מי♭',
-      primaryName: 'E♭ מז\'ור',
-      chromaticIndex: 3,
-      spellings: [
-        {
-          name: 'E♭ מז\'ור',
-          hebrewNoteName: 'מי♭ מז\'ור',
-          short: 'E♭',
-          accidentalType: 'flat',
-          accidentalCount: 3,
-          accidentals: ['B♭', 'E♭', 'A♭'],
-          notes: ['E♭', 'F', 'G', 'A♭', 'B♭', 'C', 'D'],
-        },
-      ],
-    },
-    minor: {
-      id: 'minor-9',
-      label: 'Cm',
-      hebrewSubtitle: 'דו מינור',
-      hebrewShort: 'דו מינור',
-      primaryName: 'C מינור',
-      chromaticIndex: 0,
-      spellings: [
-        {
-          name: 'C מינור',
-          hebrewNoteName: 'דו מינור',
-          short: 'Cm',
-          accidentalType: 'flat',
-          accidentalCount: 3,
-          accidentals: ['B♭', 'E♭', 'A♭'],
-          notes: ['C', 'D', 'E♭', 'F', 'G', 'A♭', 'B♭'],
-        },
-      ],
-    },
-  },
-  {
-    position: 10,
-    major: {
-      id: 'major-10',
-      label: 'B♭',
-      hebrewSubtitle: 'סי♭ מז\'ור',
-      hebrewShort: 'סי♭',
-      primaryName: 'B♭ מז\'ור',
-      chromaticIndex: 10,
-      spellings: [
-        {
-          name: 'B♭ מז\'ור',
-          hebrewNoteName: 'סי♭ מז\'ור',
-          short: 'B♭',
-          accidentalType: 'flat',
-          accidentalCount: 2,
-          accidentals: ['B♭', 'E♭'],
-          notes: ['B♭', 'C', 'D', 'E♭', 'F', 'G', 'A'],
-        },
-      ],
-    },
-    minor: {
-      id: 'minor-10',
-      label: 'Gm',
-      hebrewSubtitle: 'סול מינור',
-      hebrewShort: 'סול מינור',
-      primaryName: 'G מינור',
-      chromaticIndex: 7,
-      spellings: [
-        {
-          name: 'G מינור',
-          hebrewNoteName: 'סול מינור',
-          short: 'Gm',
-          accidentalType: 'flat',
-          accidentalCount: 2,
-          accidentals: ['B♭', 'E♭'],
-          notes: ['G', 'A', 'B♭', 'C', 'D', 'E♭', 'F'],
-        },
-      ],
-    },
-  },
-  {
-    position: 11,
-    major: {
-      id: 'major-11',
+      id: 'maj-F',
       label: 'F',
-      hebrewSubtitle: 'פה מז\'ור',
       hebrewShort: 'פה',
-      primaryName: 'F מז\'ור',
-      chromaticIndex: 5,
-      spellings: [
-        {
-          name: 'F מז\'ור',
-          hebrewNoteName: 'פה מז\'ור',
-          short: 'F',
-          accidentalType: 'flat',
-          accidentalCount: 1,
-          accidentals: ['B♭'],
-          notes: ['F', 'G', 'A', 'B♭', 'C', 'D', 'E'],
-        },
-      ],
+      hebrewFull: "פה מז'ור",
+      chromaticRank: 6,
+      notes: ['F', 'G', 'A', 'B♭', 'C', 'D', 'E'],
     },
     minor: {
-      id: 'minor-11',
+      id: 'min-Dm',
       label: 'Dm',
-      hebrewSubtitle: 'רה מינור',
       hebrewShort: 'רה מינור',
-      primaryName: 'D מינור',
-      chromaticIndex: 2,
-      spellings: [
-        {
-          name: 'D מינור',
-          hebrewNoteName: 'רה מינור',
-          short: 'Dm',
-          accidentalType: 'flat',
-          accidentalCount: 1,
-          accidentals: ['B♭'],
-          notes: ['D', 'E', 'F', 'G', 'A', 'B♭', 'C'],
-        },
-      ],
+      hebrewFull: 'רה מינור',
+      chromaticRank: 2,
+      notes: ['D', 'E', 'F', 'G', 'A', 'B♭', 'C'],
+    },
+  },
+  {
+    accidentalType: 'flat',
+    accidentalCount: 2,
+    circlePosition: 10,
+    circleOrder: 13,
+    accidentals: ['B♭', 'E♭'],
+    major: {
+      id: 'maj-Bb',
+      label: 'B♭',
+      hebrewShort: 'סי♭',
+      hebrewFull: "סי♭ מז'ור",
+      chromaticRank: 12,
+      notes: ['B♭', 'C', 'D', 'E♭', 'F', 'G', 'A'],
+    },
+    minor: {
+      id: 'min-Gm',
+      label: 'Gm',
+      hebrewShort: 'סול מינור',
+      hebrewFull: 'סול מינור',
+      chromaticRank: 8,
+      notes: ['G', 'A', 'B♭', 'C', 'D', 'E♭', 'F'],
+    },
+  },
+  {
+    accidentalType: 'flat',
+    accidentalCount: 3,
+    circlePosition: 9,
+    circleOrder: 12,
+    accidentals: ['B♭', 'E♭', 'A♭'],
+    major: {
+      id: 'maj-Eb',
+      label: 'E♭',
+      hebrewShort: 'מי♭',
+      hebrewFull: "מי♭ מז'ור",
+      chromaticRank: 4,
+      notes: ['E♭', 'F', 'G', 'A♭', 'B♭', 'C', 'D'],
+    },
+    minor: {
+      id: 'min-Cm',
+      label: 'Cm',
+      hebrewShort: 'דו מינור',
+      hebrewFull: 'דו מינור',
+      chromaticRank: 0,
+      notes: ['C', 'D', 'E♭', 'F', 'G', 'A♭', 'B♭'],
+    },
+  },
+  {
+    accidentalType: 'flat',
+    accidentalCount: 4,
+    circlePosition: 8,
+    circleOrder: 11,
+    accidentals: ['B♭', 'E♭', 'A♭', 'D♭'],
+    major: {
+      id: 'maj-Ab',
+      label: 'A♭',
+      hebrewShort: 'לה♭',
+      hebrewFull: "לה♭ מז'ור",
+      chromaticRank: 10,
+      notes: ['A♭', 'B♭', 'C', 'D♭', 'E♭', 'F', 'G'],
+    },
+    minor: {
+      id: 'min-Fm',
+      label: 'Fm',
+      hebrewShort: 'פה מינור',
+      hebrewFull: 'פה מינור',
+      chromaticRank: 6,
+      notes: ['F', 'G', 'A♭', 'B♭', 'C', 'D♭', 'E♭'],
+    },
+  },
+  {
+    accidentalType: 'flat',
+    accidentalCount: 5,
+    circlePosition: 7,
+    circleOrder: 10,
+    accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭'],
+    major: {
+      id: 'maj-Db',
+      label: 'D♭',
+      hebrewShort: 'רה♭',
+      hebrewFull: "רה♭ מז'ור",
+      chromaticRank: 2,
+      notes: ['D♭', 'E♭', 'F', 'G♭', 'A♭', 'B♭', 'C'],
+    },
+    minor: {
+      id: 'min-Bbm',
+      label: 'B♭m',
+      hebrewShort: 'סי♭ מינור',
+      hebrewFull: 'סי♭ מינור',
+      chromaticRank: 13,
+      notes: ['B♭', 'C', 'D♭', 'E♭', 'F', 'G♭', 'A♭'],
+    },
+  },
+  {
+    accidentalType: 'flat',
+    accidentalCount: 6,
+    circlePosition: 6,
+    circleOrder: 9,
+    accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭', 'C♭'],
+    major: {
+      id: 'maj-Gb',
+      label: 'G♭',
+      hebrewShort: 'סול♭',
+      hebrewFull: "סול♭ מז'ור",
+      chromaticRank: 8,
+      notes: ['G♭', 'A♭', 'B♭', 'C♭', 'D♭', 'E♭', 'F'],
+    },
+    minor: {
+      id: 'min-Ebm',
+      label: 'E♭m',
+      hebrewShort: 'מי♭ מינור',
+      hebrewFull: 'מי♭ מינור',
+      chromaticRank: 4,
+      notes: ['E♭', 'F', 'G♭', 'A♭', 'B♭', 'C♭', 'D♭'],
+    },
+  },
+  {
+    accidentalType: 'flat',
+    accidentalCount: 7,
+    circlePosition: 5,
+    circleOrder: 8,
+    accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭', 'C♭', 'F♭'],
+    major: {
+      id: 'maj-Cb',
+      label: 'C♭',
+      hebrewShort: 'דו♭',
+      hebrewFull: "דו♭ מז'ור",
+      chromaticRank: 14,
+      notes: ['C♭', 'D♭', 'E♭', 'F♭', 'G♭', 'A♭', 'B♭'],
+    },
+    minor: {
+      id: 'min-Abm',
+      label: 'A♭m',
+      hebrewShort: 'לה♭ מינור',
+      hebrewFull: 'לה♭ מינור',
+      chromaticRank: 10,
+      notes: ['A♭', 'B♭', 'C♭', 'D♭', 'E♭', 'F♭', 'G♭'],
     },
   },
 ];
 
-export const MAJOR_KEYS = CIRCLE_POSITIONS.map((p) => ({
-  ...p.major,
-  position: p.position,
+export const MAJOR_SCALES = SIGNATURE_ROWS.map((row) => ({
+  ...row.major,
   quality: 'major',
-  relativeId: p.minor.id,
-  relativeLabel: p.minor.label,
-  relativePrimaryName: p.minor.primaryName,
-  relativeHebrewSubtitle: p.minor.hebrewSubtitle,
+  accidentalType: row.accidentalType,
+  accidentalCount: row.accidentalCount,
+  accidentals: row.accidentals,
+  circlePosition: row.circlePosition,
+  circleOrder: row.circleOrder,
+  relativeLabel: row.minor.label,
+  relativeHebrew: row.minor.hebrewFull,
 }));
 
-export const MINOR_KEYS = CIRCLE_POSITIONS.map((p) => ({
-  ...p.minor,
-  position: p.position,
+export const MINOR_SCALES = SIGNATURE_ROWS.map((row) => ({
+  ...row.minor,
   quality: 'minor',
-  relativeId: p.major.id,
-  relativeLabel: p.major.label,
-  relativePrimaryName: p.major.primaryName,
-  relativeHebrewSubtitle: p.major.hebrewSubtitle,
+  accidentalType: row.accidentalType,
+  accidentalCount: row.accidentalCount,
+  accidentals: row.accidentals,
+  circlePosition: row.circlePosition,
+  circleOrder: row.circleOrder,
+  relativeLabel: row.major.label,
+  relativeHebrew: row.major.hebrewFull,
 }));
 
-export const ALL_KEYS = [...MAJOR_KEYS, ...MINOR_KEYS];
-
-export const KEY_BY_ID = Object.fromEntries(ALL_KEYS.map((k) => [k.id, k]));
+export const ALL_SCALES = [...MAJOR_SCALES, ...MINOR_SCALES];
 
 /**
- * Compact LTR badge for SVG outer rim and pills (e.g., "0♯/♭", "3♯", "4♭", "5♯ / 7♭")
+ * Preferred practical key per circle position (0..11) for clean saxophone transposition readouts.
  */
-export function formatSignatureSummary(keyObj) {
-  if (keyObj.spellings.length === 1) {
-    const s = keyObj.spellings[0];
-    if (s.accidentalCount === 0) return '0♯/♭';
-    return `${s.accidentalCount}${s.accidentalType === 'sharp' ? '♯' : '♭'}`;
-  }
-  return keyObj.spellings
-    .map((s) => `${s.accidentalCount}${s.accidentalType === 'sharp' ? '♯' : '♭'}`)
-    .join(' / ');
-}
+const PRACTICAL_BY_POS = {
+  0: { major: 'C', minor: 'Am', sig: '0♯/♭', heMaj: "דו מז'ור", heMin: 'לה מינור' },
+  1: { major: 'G', minor: 'Em', sig: '1♯', heMaj: "סול מז'ור", heMin: 'מי מינור' },
+  2: { major: 'D', minor: 'Bm', sig: '2♯', heMaj: "רה מז'ור", heMin: 'סי מינור' },
+  3: { major: 'A', minor: 'F♯m', sig: '3♯', heMaj: "לה מז'ור", heMin: 'פה♯ מינור' },
+  4: { major: 'E', minor: 'C♯m', sig: '4♯', heMaj: "מי מז'ור", heMin: 'דו♯ מינור' },
+  5: { major: 'B', minor: 'G♯m', sig: '5♯', heMaj: "סי מז'ור", heMin: 'סול♯ מינור' },
+  6: { major: 'F♯ / G♭', minor: 'D♯m / E♭m', sig: '6♯/6♭', heMaj: 'פה♯ / סול♭', heMin: 'רה♯ / מי♭ מינור' },
+  7: { major: 'D♭', minor: 'B♭m', sig: '5♭', heMaj: "רה♭ מז'ור", heMin: 'סי♭ מינור' },
+  8: { major: 'A♭', minor: 'Fm', sig: '4♭', heMaj: "לה♭ מז'ור", heMin: 'פה מינור' },
+  9: { major: 'E♭', minor: 'Cm', sig: '3♭', heMaj: "מי♭ מז'ור", heMin: 'דו מינור' },
+  10: { major: 'B♭', minor: 'Gm', sig: '2♭', heMaj: "סי♭ מז'ור", heMin: 'סול מינור' },
+  11: { major: 'F', minor: 'Dm', sig: '1♭', heMaj: "פה מז'ור", heMin: 'רה מינור' },
+};
 
-/**
- * Natural Hebrew description of a key signature.
- */
-export function formatSpellingSignatureHe(spelling) {
-  if (spelling.accidentalCount === 0) return 'ללא דיאזים או במולים';
-  if (spelling.accidentalType === 'sharp') {
-    return spelling.accidentalCount === 1
-      ? 'דיאז אחד (♯)'
-      : `${spelling.accidentalCount} דיאזים (♯)`;
-  }
-  return spelling.accidentalCount === 1
-    ? 'במול אחד (♭)'
-    : `${spelling.accidentalCount} במולים (♭)`;
-}
-
-/**
- * Saxophone transposition helper.
- * Concert pitch -> Written pitch for saxophones:
- * - Eb Sax (Alto / Baritone): +3 positions clockwise on Circle of Fifths
- * - Bb Sax (Tenor / Soprano): +2 positions clockwise on Circle of Fifths
- */
-export function getSaxTransposition(position, quality) {
-  const ebPos = (position + 3) % 12;
-  const bbPos = (position + 2) % 12;
-  const ebKey = CIRCLE_POSITIONS[ebPos][quality];
-  const bbKey = CIRCLE_POSITIONS[bbPos][quality];
+export function getSaxTransposition(circlePosition, quality) {
+  const ebPos = (circlePosition + 3) % 12;
+  const bbPos = (circlePosition + 2) % 12;
+  const eb = PRACTICAL_BY_POS[ebPos];
+  const bb = PRACTICAL_BY_POS[bbPos];
+  const isMajor = quality === 'major';
 
   return {
     eb: {
-      instrument: 'סקסופון אלט / בריטון (E♭)',
-      writtenLabel: ebKey.label,
-      writtenHebrew: ebKey.hebrewSubtitle,
-      signature: formatSignatureSummary(ebKey),
+      writtenLabel: isMajor ? eb.major : eb.minor,
+      writtenHebrew: isMajor ? eb.heMaj : eb.heMin,
+      signature: eb.sig,
     },
     bb: {
-      instrument: 'סקסופון טנור / סופרן (B♭)',
-      writtenLabel: bbKey.label,
-      writtenHebrew: bbKey.hebrewSubtitle,
-      signature: formatSignatureSummary(bbKey),
+      writtenLabel: isMajor ? bb.major : bb.minor,
+      writtenHebrew: isMajor ? bb.heMaj : bb.heMin,
+      signature: bb.sig,
     },
   };
 }
 
-/**
- * Sort keys Chromatically (C, C#/Db, D...) or by Circle of Fifths (C, G, D...).
- */
-export function sortKeys(keys, order = 'chromatic') {
-  const copy = [...keys];
-  if (order === 'fifths') {
-    return copy.sort((a, b) => a.position - b.position);
+export function formatSignatureBadge(scale) {
+  if (scale.accidentalCount === 0) return '0';
+  return `${scale.accidentalCount}${scale.accidentalType === 'sharp' ? '♯' : '♭'}`;
+}
+
+export function formatSignatureHe(scale) {
+  if (scale.accidentalCount === 0) return 'ללא דיאזים או במולים (0)';
+  if (scale.accidentalType === 'sharp') {
+    return scale.accidentalCount === 1
+      ? 'דיאז אחד (♯)'
+      : `${scale.accidentalCount} דיאזים (♯)`;
   }
-  return copy.sort((a, b) => a.chromaticIndex - b.chromaticIndex);
+  return scale.accidentalCount === 1
+    ? 'במול אחד (♭)'
+    : `${scale.accidentalCount} במולים (♭)`;
+}
+
+export function sortScales(scales, order = 'chromatic') {
+  const copy = [...scales];
+  if (order === 'fifths') {
+    return copy.sort((a, b) => a.circleOrder - b.circleOrder);
+  }
+  return copy.sort((a, b) => a.chromaticRank - b.chromaticRank);
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle2, XCircle, ArrowLeft, Music2 } from 'lucide-react';
 import {
-  formatSpellingSignatureHe,
+  formatSignatureHe,
   getSaxTransposition,
   noteToHebrew,
 } from '../data/circleOfFifths';
@@ -15,26 +15,19 @@ export default function FeedbackBanner({
   if (!feedback || !question) return null;
 
   const { isCorrect } = feedback;
-  const target = question.targetKey;
-  const activeSpelling = question.activeSpelling || target.spellings[0];
-  const altSpelling =
-    target.spellings.length > 1
-      ? target.spellings.find((s) => s.name !== activeSpelling.name)
-      : null;
+  const target = question.targetScale;
 
-  const sax = getSaxTransposition(target.position, target.quality);
+  const sax = getSaxTransposition(target.circlePosition, target.quality);
   const showEb = saxMode === 'eb';
   const showBb = saxMode === 'bb';
 
-  const baseNoteLtr = activeSpelling.short.replace(/m$/, '');
+  const baseNoteLtr = target.label.replace(/m$/, '');
   const qualityHe = target.quality === 'major' ? "מז'ור" : 'מינור';
-  const hebrewAccidentalsList = activeSpelling.accidentals
-    .map(noteToHebrew)
-    .join(', ');
+  const hebrewAccidentals = target.accidentals.map(noteToHebrew).join(', ');
 
   return (
     <div
-      className={`w-full rounded-2xl border p-4 animate-fade-slide-up ${
+      className={`w-full rounded-2xl border p-4 sm:p-5 animate-fade-slide-up ${
         isCorrect
           ? 'bg-emerald-950/45 border-emerald-500/40'
           : 'bg-rose-950/45 border-rose-500/45'
@@ -47,56 +40,39 @@ export default function FeedbackBanner({
           ) : (
             <XCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
           )}
+
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              {isCorrect ? (
-                <span className="text-sm font-bold text-emerald-300">
-                  מדויק!{' '}
-                  <span dir="ltr" className="music-ltr text-emerald-100">
-                    {baseNoteLtr}
-                  </span>{' '}
-                  {qualityHe} ({activeSpelling.hebrewNoteName})
+            {isCorrect ? (
+              <div className="text-sm sm:text-base font-bold text-emerald-300">
+                מדויק!{' '}
+                <span dir="ltr" className="music-ltr text-emerald-100">
+                  {baseNoteLtr}
+                </span>{' '}
+                {qualityHe}{' '}
+                <span className="font-normal text-emerald-200/80">
+                  ({target.hebrewFull})
                 </span>
-              ) : (
-                <span className="text-sm font-bold text-rose-200 leading-relaxed">
-                  התשובה הנכונה היא{' '}
-                  <span dir="ltr" className="music-ltr text-white font-extrabold">
-                    {baseNoteLtr}
-                  </span>{' '}
-                  {qualityHe}{' '}
-                  <span className="font-normal text-rose-100/90">
-                    ({formatSpellingSignatureHe(activeSpelling)}
-                    {activeSpelling.accidentals.length > 0
-                      ? `: ${hebrewAccidentalsList}`
-                      : ''}
-                    )
-                  </span>
+              </div>
+            ) : (
+              <div className="text-sm sm:text-base font-bold text-rose-200 leading-relaxed">
+                טעות. התשובה הנכונה היא{' '}
+                <span dir="ltr" className="music-ltr text-white font-extrabold">
+                  {baseNoteLtr}
+                </span>{' '}
+                {qualityHe}{' '}
+                <span className="font-normal text-rose-100/90">
+                  ({formatSignatureHe(target)}
+                  {target.accidentals.length > 0 ? `: ${hebrewAccidentals}` : ''})
                 </span>
-              )}
+              </div>
+            )}
 
-              {altSpelling && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800/90 text-slate-300 border border-slate-700">
-                  אנהרמוני:{' '}
-                  <span dir="ltr" className="music-ltr font-semibold">
-                    {altSpelling.short}
-                  </span>{' '}
-                  ({formatSpellingSignatureHe(altSpelling)})
-                </span>
-              )}
-            </div>
-
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300">
-              <span>
-                <strong className="text-slate-400 font-medium">חתימת מפתח:</strong>{' '}
-                <span className="text-amber-300 font-medium">
-                  {formatSpellingSignatureHe(activeSpelling)}
-                </span>
-              </span>
-              {activeSpelling.accidentals.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300">
+              {target.accidentals.length > 0 && (
                 <span>
                   <strong className="text-slate-400 font-medium">סימני היתק:</strong>{' '}
                   <span dir="ltr" className="music-ltr font-mono-music text-slate-100">
-                    {activeSpelling.accidentals.join(', ')}
+                    {target.accidentals.join(', ')}
                   </span>
                 </span>
               )}
@@ -105,15 +81,15 @@ export default function FeedbackBanner({
                 <span dir="ltr" className="music-ltr font-semibold text-slate-100">
                   {target.relativeLabel}
                 </span>{' '}
-                <span className="text-slate-400">({target.relativeHebrewSubtitle})</span>
+                <span className="text-slate-400">({target.relativeHebrew})</span>
               </span>
             </div>
 
-            {/* Scale notes in LTR order */}
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {/* Scale notes */}
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
               <span className="text-[11px] font-medium text-slate-400 ml-1">תווי הסולם:</span>
               <div dir="ltr" className="inline-flex flex-wrap items-center gap-1">
-                {activeSpelling.notes.map((note, idx) => (
+                {target.notes.map((note, idx) => (
                   <span
                     key={`${note}-${idx}`}
                     className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 text-xs font-mono-music font-semibold text-slate-100"
@@ -146,7 +122,7 @@ export default function FeedbackBanner({
             <span>
               טרנספוזיציה מקונצרט{' '}
               <span dir="ltr" className="music-ltr text-amber-200">
-                {activeSpelling.short}
+                {target.label}
               </span>
               :
             </span>

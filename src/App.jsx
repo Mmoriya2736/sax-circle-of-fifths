@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RotateCcw, Sparkles } from 'lucide-react';
-import CircleOfFifthsSVG from './components/CircleOfFifthsSVG';
 import StatsBar from './components/StatsBar';
 import ControlBar from './components/ControlBar';
 import AnswerGrid from './components/AnswerGrid';
 import FeedbackBanner from './components/FeedbackBanner';
-import PeekStudyPanel from './components/PeekStudyPanel';
+import CheatSheetModal from './components/CheatSheetModal';
+import JazzAudioPlayer from './components/JazzAudioPlayer';
+import SaxBackgroundDecor, { SaxBadgeIcon } from './components/SaxBackgroundDecor';
 import {
   generateQuestion,
   loadPersistedData,
@@ -15,16 +16,12 @@ import {
 export default function App() {
   const persisted = useRef(loadPersistedData());
 
-  // Practice filters
+  // Practice settings
   const [scope, setScope] = useState('major'); // 'major' | 'minor' | 'mixed'
-  const [promptStyle, setPromptStyle] = useState('both'); // 'text' | 'visual' | 'both'
   const [sortOrder, setSortOrder] = useState('chromatic'); // 'chromatic' | 'fifths'
   const [saxMode, setSaxMode] = useState('concert'); // 'concert' | 'eb' | 'bb'
   const [showHebrewNotes, setShowHebrewNotes] = useState(true);
-
-  // Peek / Reference mode
-  const [isPeekMode, setIsPeekMode] = useState(false);
-  const [selectedPeekKey, setSelectedPeekKey] = useState(null);
+  const [isCheatSheetOpen, setIsCheatSheetOpen] = useState(false);
 
   // Persisted stats & spaced-repetition state
   const [bestStreak, setBestStreak] = useState(persisted.current.bestStreak);
@@ -40,9 +37,8 @@ export default function App() {
   const [question, setQuestion] = useState(() =>
     generateQuestion({
       scope: 'major',
-      promptStyle: 'both',
       weakKeys: persisted.current.weakKeys,
-      lastKeyId: null,
+      lastScaleId: null,
     })
   );
   const [feedback, setFeedback] = useState(null);
@@ -69,58 +65,36 @@ export default function App() {
   }, [bestStreak, weakKeys]);
 
   const startNextQuestion = useCallback(
-    (nextScope = scope, nextPromptStyle = promptStyle, nextWeakKeys = weakKeys) => {
+    (nextScope = scope, nextWeakKeys = weakKeys) => {
       clearAdvanceTimer();
       setFeedback(null);
       setQuestion((prev) =>
         generateQuestion({
           scope: nextScope,
-          promptStyle: nextPromptStyle,
           weakKeys: nextWeakKeys,
-          lastKeyId: prev?.targetKey?.id || null,
+          lastScaleId: prev?.targetScale?.id || null,
         })
       );
       questionStartRef.current = Date.now();
     },
-    [scope, promptStyle, weakKeys, clearAdvanceTimer]
+    [scope, weakKeys, clearAdvanceTimer]
   );
 
   const handleScopeChange = (newScope) => {
     setScope(newScope);
-    if (!isPeekMode) {
-      startNextQuestion(newScope, promptStyle, weakKeys);
-    }
+    startNextQuestion(newScope, weakKeys);
   };
 
-  const handlePromptStyleChange = (newStyle) => {
-    setPromptStyle(newStyle);
-    if (!isPeekMode) {
-      startNextQuestion(scope, newStyle, weakKeys);
-    }
-  };
-
-  const handleTogglePeek = () => {
-    clearAdvanceTimer();
-    if (isPeekMode) {
-      setIsPeekMode(false);
-      setSelectedPeekKey(null);
-      startNextQuestion(scope, promptStyle, weakKeys);
-    } else {
-      setFeedback(null);
-      setIsPeekMode(true);
-    }
-  };
-
-  const handleAnswer = (chosenKey) => {
-    if (feedback || isPeekMode) return;
+  const handleAnswer = (chosenScale) => {
+    if (feedback) return;
 
     const elapsedMs = Math.max(150, Date.now() - questionStartRef.current);
-    const isCorrect = chosenKey.id === question.targetKey.id;
+    const isCorrect = chosenScale.id === question.targetScale.id;
 
     setSessionTotal((n) => n + 1);
     setTotalResponseMs((ms) => ms + elapsedMs);
 
-    const targetId = question.targetKey.id;
+    const targetId = question.targetScale.id;
     const nextWeakKeys = { ...weakKeys };
 
     if (isCorrect) {
@@ -153,16 +127,16 @@ export default function App() {
     setWeakKeys(nextWeakKeys);
     setFeedback({
       isCorrect,
-      chosenKey,
+      chosenScale,
       elapsedMs,
     });
 
-    // 600ms auto-advance on right answer (1400ms if sax transposition hint is active so user can read it)
-    const delayMs = isCorrect ? (saxMode === 'concert' ? 600 : 1400) : 3600;
+    // 600ms auto-advance on right answer (1400ms when sax transposition hint is active)
+    const delayMs = isCorrect ? (saxMode === 'concert' ? 600 : 1400) : 3800;
 
     clearAdvanceTimer();
     advanceTimerRef.current = setTimeout(() => {
-      startNextQuestion(scope, promptStyle, nextWeakKeys);
+      startNextQuestion(scope, nextWeakKeys);
     }, delayMs);
   };
 
@@ -172,28 +146,35 @@ export default function App() {
     setSessionCorrect(0);
     setSessionTotal(0);
     setTotalResponseMs(0);
-    startNextQuestion(scope, promptStyle, weakKeys);
+    startNextQuestion(scope, weakKeys);
   };
 
   const accuracy = sessionTotal > 0 ? (sessionCorrect / sessionTotal) * 100 : 0;
   const avgTimeMs = sessionTotal > 0 ? totalResponseMs / sessionTotal : 0;
   const weakCount = Object.keys(weakKeys).length;
 
+  const isMajorQ = question.targetScale.quality === 'major';
+  const isSharpQ = question.targetScale.accidentalType === 'sharp';
+  const isFlatQ = question.targetScale.accidentalType === 'flat';
+
   return (
-    <div className="min-h-screen flex flex-col text-slate-100" dir="rtl">
+    <div className="min-h-screen flex flex-col text-slate-100 relative" dir="rtl">
+      {/* Subtle Golden Saxophone & Floating Musical Note Background Layer */}
+      <SaxBackgroundDecor />
+
       {/* Header */}
-      <header className="w-full border-b border-slate-800/80 bg-slate-950/75 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+      <header className="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_18px_rgba(245,158,11,0.35)] shrink-0">
-              <span className="text-slate-950 font-extrabold text-lg leading-none">5</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.38)] shrink-0">
+              <SaxBadgeIcon className="w-6 h-6 text-slate-950" />
             </div>
             <div>
               <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-50 leading-tight">
-                מעגל הקווינטות
+                מעגל הקווינטות — סימני היתק
               </h1>
               <p className="text-[11px] sm:text-xs text-slate-400">
-                מאמן סולמות אינטראקטיבי לנגני סקסופון
+                אימון דיאזים ובמולים לנגני סקסופון
               </p>
             </div>
           </div>
@@ -210,8 +191,11 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-5">
+      {/* Main Content — Clean Centered Layout */}
+      <main className="relative z-10 flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-4 sm:space-y-5">
+        {/* Background Smooth Jazz Saxophone Mini-Player */}
+        <JazzAudioPlayer />
+
         {/* Stats Bar */}
         <StatsBar
           streak={streak}
@@ -226,108 +210,113 @@ export default function App() {
         <ControlBar
           scope={scope}
           onScopeChange={handleScopeChange}
-          promptStyle={promptStyle}
-          onPromptStyleChange={handlePromptStyleChange}
           sortOrder={sortOrder}
           onSortOrderChange={setSortOrder}
           saxMode={saxMode}
           onSaxModeChange={setSaxMode}
           showHebrewNotes={showHebrewNotes}
           onToggleHebrewNotes={() => setShowHebrewNotes((v) => !v)}
-          isPeekMode={isPeekMode}
-          onTogglePeek={handleTogglePeek}
+          onOpenCheatSheet={() => setIsCheatSheetOpen(true)}
         />
 
-        {/* Workspace Grid: SVG Wheel + Quiz/Reference Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Circle of Fifths SVG */}
-          <div className="lg:col-span-5 rounded-2xl bg-slate-900/55 border border-slate-800/80 p-4 sm:p-5 flex flex-col items-center">
-            <CircleOfFifthsSVG
-              question={question}
-              feedback={feedback}
-              isPeekMode={isPeekMode}
-              selectedPeekKey={selectedPeekKey}
-              onSelectPeekKey={setSelectedPeekKey}
-              scope={scope}
-            />
-            <div className="mt-3 flex items-center justify-center gap-5 text-[11.5px] text-slate-400">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                טבעת חיצונית: מז&apos;ור
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-sky-500/70" />
-                טבעת פנימית: מינור מקביל
-              </span>
-            </div>
-          </div>
-
-          {/* Quiz Prompt + Answer Grid OR Reference Study Panel */}
-          <div className="lg:col-span-7 space-y-4">
-            {isPeekMode ? (
-              <PeekStudyPanel
-                selectedKey={selectedPeekKey}
-                onExitPeek={handleTogglePeek}
+        {/* Focused Key Signature Prompt Card */}
+        <section
+          className={`rounded-2xl border p-5 sm:p-7 backdrop-blur-sm transition-colors ${
+            isMajorQ
+              ? 'bg-gradient-to-b from-amber-500/[0.08] to-slate-900/85 border-amber-500/30'
+              : 'bg-gradient-to-b from-sky-500/[0.09] to-slate-900/85 border-sky-500/30'
+          }`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${
+                isMajorQ
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                  : 'bg-sky-500/20 text-sky-300 border-sky-400/40'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isMajorQ ? 'bg-amber-400' : 'bg-sky-400'
+                }`}
               />
-            ) : (
-              <>
-                {/* Prompt Card */}
-                <div className="rounded-2xl bg-slate-900/75 border border-slate-800/90 p-5 sm:p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-[11.5px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                      {question.badge}
-                    </span>
+              {isMajorQ ? "סולם מז'ור" : 'סולם מינור'}
+            </span>
 
-                    {question.isWeakReview && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                        <Sparkles className="w-3 h-3" />
-                        חזרה מחוזקת
-                      </span>
-                    )}
-                  </div>
-
-                  <h2 className="mt-3 text-xl sm:text-2xl font-bold text-slate-50 leading-snug">
-                    {question.promptParts.prefix}
-                    {question.promptParts.ltrToken && (
-                      <span
-                        dir="ltr"
-                        className="music-ltr mx-1.5 px-2 py-0.5 rounded-lg bg-slate-800/90 border border-slate-700/80 text-amber-300 font-mono-music"
-                      >
-                        {question.promptParts.ltrToken}
-                      </span>
-                    )}
-                    {question.promptParts.suffix}
-                  </h2>
-                  <p className="mt-1.5 text-xs sm:text-sm text-slate-400">
-                    {question.promptSub}
-                  </p>
-                </div>
-
-                {/* Instant Feedback Banner */}
-                <FeedbackBanner
-                  question={question}
-                  feedback={feedback}
-                  saxMode={saxMode}
-                  onNext={() => startNextQuestion(scope, promptStyle, weakKeys)}
-                />
-
-                {/* All-Options Clickable Answer Grid */}
-                <div className="rounded-2xl bg-slate-900/55 border border-slate-800/80 p-4 sm:p-5">
-                  <AnswerGrid
-                    scope={scope}
-                    sortOrder={sortOrder}
-                    showHebrewNotes={showHebrewNotes}
-                    question={question}
-                    feedback={feedback}
-                    disabled={isPeekMode}
-                    onAnswer={handleAnswer}
-                  />
-                </div>
-              </>
+            {question.isWeakReview && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                <Sparkles className="w-3 h-3" />
+                חזרה מחוזקת
+              </span>
             )}
           </div>
-        </div>
+
+          <h2 className="mt-4 text-2xl sm:text-3xl font-bold text-slate-100 leading-relaxed">
+            מהו הסולם{' '}
+            <span
+              className={`inline-block px-2.5 py-0.5 rounded-lg font-extrabold ${
+                isMajorQ
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/35'
+                  : 'bg-sky-500/20 text-sky-300 border border-sky-500/35'
+              }`}
+            >
+              {isMajorQ ? "המז'ורי" : 'המינורי'}
+            </span>{' '}
+            {question.isZero ? (
+              <>
+                שאין בו{' '}
+                <strong className="font-extrabold text-white underline decoration-slate-500 underline-offset-4">
+                  דיאזים או במולים (0)
+                </strong>
+                ?
+              </>
+            ) : (
+              <>
+                שיש בו{' '}
+                <strong
+                  className={`font-extrabold ${
+                    isSharpQ
+                      ? 'text-amber-200'
+                      : isFlatQ
+                      ? 'text-sky-200'
+                      : 'text-white'
+                  }`}
+                >
+                  {question.signaturePhrase}
+                </strong>
+                ?
+              </>
+            )}
+          </h2>
+        </section>
+
+        {/* Instant Feedback Banner */}
+        <FeedbackBanner
+          question={question}
+          feedback={feedback}
+          saxMode={saxMode}
+          onNext={() => startNextQuestion(scope, weakKeys)}
+        />
+
+        {/* All-Options Clickable Answer Grid */}
+        <section className="rounded-2xl bg-slate-900/65 backdrop-blur-sm border border-slate-800/80 p-4 sm:p-5">
+          <AnswerGrid
+            scope={scope}
+            sortOrder={sortOrder}
+            showHebrewNotes={showHebrewNotes}
+            question={question}
+            feedback={feedback}
+            onAnswer={handleAnswer}
+          />
+        </section>
       </main>
+
+      {/* Cheat Sheet Reference Modal */}
+      <CheatSheetModal
+        isOpen={isCheatSheetOpen}
+        onClose={() => setIsCheatSheetOpen(false)}
+        saxMode={saxMode}
+      />
     </div>
   );
 }

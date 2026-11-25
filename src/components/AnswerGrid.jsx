@@ -1,5 +1,5 @@
 import React from 'react';
-import { MAJOR_KEYS, MINOR_KEYS, sortKeys } from '../data/circleOfFifths';
+import { MAJOR_SCALES, MINOR_SCALES, sortScales } from '../data/circleOfFifths';
 
 export default function AnswerGrid({
   scope,
@@ -7,35 +7,37 @@ export default function AnswerGrid({
   showHebrewNotes,
   question,
   feedback,
-  disabled,
   onAnswer,
 }) {
-  const majorOptions = sortKeys(MAJOR_KEYS, sortOrder);
-  const minorOptions = sortKeys(MINOR_KEYS, sortOrder);
+  const majorOptions = sortScales(MAJOR_SCALES, sortOrder);
+  const minorOptions = sortScales(MINOR_SCALES, sortOrder);
 
-  const renderSection = (title, accentClass, keys) => (
-    <div className="space-y-2.5">
+  const renderSection = (title, accentClass, badgeClass, scales) => (
+    <div className="space-y-3">
       {scope === 'mixed' && (
         <div className="flex items-center justify-between">
-          <h3 className={`text-xs font-bold ${accentClass}`}>{title}</h3>
+          <div className="flex items-center gap-2">
+            <span className={`w-2.5 h-2.5 rounded-full ${badgeClass}`} />
+            <h3 className={`text-sm font-bold ${accentClass}`}>{title}</h3>
+          </div>
           <span className="text-[11px] text-slate-500">
             {sortOrder === 'chromatic' ? 'סדר כרומטי' : 'סדר מעגל הקווינטות'}
           </span>
         </div>
       )}
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
-        {keys.map((keyObj) => {
-          const isCorrectKey = feedback && question?.targetKey?.id === keyObj.id;
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+        {scales.map((scale) => {
+          const isCorrectScale = feedback && question?.targetScale?.id === scale.id;
           const isChosenWrong =
-            feedback && !feedback.isCorrect && feedback.chosenKey?.id === keyObj.id;
+            feedback && !feedback.isCorrect && feedback.chosenScale?.id === scale.id;
           const isChosenCorrect =
-            feedback && feedback.isCorrect && feedback.chosenKey?.id === keyObj.id;
+            feedback && feedback.isCorrect && feedback.chosenScale?.id === scale.id;
 
           let stateClasses =
-            'bg-slate-900/90 border-slate-800 text-slate-100 hover:border-amber-500/60 hover:bg-slate-800/90 hover:text-amber-100 active:scale-[0.98]';
+            'bg-slate-900/90 border-slate-800 text-slate-100 hover:border-amber-500/60 hover:bg-slate-800/90 hover:text-amber-100 active:scale-[0.97]';
 
-          if (isChosenCorrect || isCorrectKey) {
+          if (isChosenCorrect || isCorrectScale) {
             stateClasses =
               'bg-emerald-600/25 border-emerald-400 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.3)]';
           } else if (isChosenWrong) {
@@ -45,35 +47,25 @@ export default function AnswerGrid({
             stateClasses = 'bg-slate-900/40 border-slate-800/60 text-slate-500';
           }
 
-          const isEnharmonic = keyObj.spellings.length > 1;
-
           return (
             <button
-              key={keyObj.id}
+              key={scale.id}
               type="button"
-              disabled={disabled || Boolean(feedback)}
-              onClick={() => onAnswer(keyObj)}
-              title={`${keyObj.label} (${keyObj.hebrewSubtitle})`}
-              className={`min-h-[58px] sm:min-h-[62px] px-2.5 py-2 rounded-xl border font-semibold transition-all duration-150 flex flex-col items-center justify-center cursor-pointer disabled:cursor-default select-none ${stateClasses}`}
+              disabled={Boolean(feedback)}
+              onClick={() => onAnswer(scale)}
+              title={`${scale.label} (${scale.hebrewFull})`}
+              className={`min-h-[60px] sm:min-h-[64px] px-2.5 py-2 rounded-xl border font-semibold transition-all duration-150 flex flex-col items-center justify-center cursor-pointer disabled:cursor-default select-none ${stateClasses}`}
             >
               <span
                 dir="ltr"
-                className={`music-ltr tracking-tight leading-tight ${
-                  isEnharmonic ? 'text-sm sm:text-[15px]' : 'text-base sm:text-lg'
-                }`}
+                className="music-ltr text-base sm:text-lg font-bold tracking-tight leading-tight"
               >
-                {keyObj.label}
+                {scale.label}
               </span>
-              {showHebrewNotes ? (
-                <span className="text-[10.5px] font-medium text-slate-400 mt-0.5 leading-tight">
-                  {keyObj.hebrewShort}
+              {showHebrewNotes && (
+                <span className="text-[11px] font-medium text-slate-400 mt-0.5 leading-tight">
+                  {scale.hebrewShort}
                 </span>
-              ) : (
-                scope !== 'mixed' && (
-                  <span className="text-[10px] font-medium text-slate-500 mt-0.5">
-                    {keyObj.quality === 'major' ? "מז'ור" : 'מינור'}
-                  </span>
-                )
               )}
             </button>
           );
@@ -83,11 +75,11 @@ export default function AnswerGrid({
   );
 
   return (
-    <div className="space-y-5 w-full">
+    <div className="space-y-6 w-full">
       {(scope === 'major' || scope === 'mixed') &&
-        renderSection("סולמות מז'ור (טבעת חיצונית)", 'text-amber-400', majorOptions)}
+        renderSection("סולמות מז'ור", 'text-amber-400', 'bg-amber-400', majorOptions)}
       {(scope === 'minor' || scope === 'mixed') &&
-        renderSection('סולמות מינור (טבעת פנימית)', 'text-sky-400', minorOptions)}
+        renderSection('סולמות מינור', 'text-sky-400', 'bg-sky-400', minorOptions)}
     </div>
   );
 }
