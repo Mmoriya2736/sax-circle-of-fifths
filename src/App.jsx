@@ -3,6 +3,7 @@ import { RotateCcw, Sparkles } from 'lucide-react';
 import StatsBar from './components/StatsBar';
 import ControlBar from './components/ControlBar';
 import AnswerGrid from './components/AnswerGrid';
+import SignatureAnswerGrid from './components/SignatureAnswerGrid';
 import FeedbackBanner from './components/FeedbackBanner';
 import CheatSheetModal from './components/CheatSheetModal';
 import JazzAudioPlayer from './components/JazzAudioPlayer';
@@ -22,7 +23,7 @@ export default function App() {
 
   // Practice settings
   const [scope, setScope] = useState('major'); // 'major' | 'minor' | 'mixed'
-  const [promptStyle, setPromptStyle] = useState('both'); // 'text' | 'visual' | 'both' (default)
+  const [promptStyle, setPromptStyle] = useState('all'); // 'scale' | 'count' | 'visual' | 'all' (default)
   const [sortOrder, setSortOrder] = useState('chromatic'); // 'chromatic' | 'fifths'
   const [saxMode, setSaxMode] = useState('concert'); // 'concert' | 'eb' | 'bb'
   const [showHebrewNotes, setShowHebrewNotes] = useState(true);
@@ -43,7 +44,7 @@ export default function App() {
   const [question, setQuestion] = useState(() =>
     generateQuestion({
       scope: 'major',
-      promptStyle: 'both',
+      promptStyle: 'all',
       weakKeys: persisted.current.weakKeys,
       lastScaleId: null,
     })
@@ -98,11 +99,11 @@ export default function App() {
     startNextQuestion(scope, newStyle, weakKeys);
   };
 
-  const handleAnswer = (chosenScale) => {
+  const handleAnswer = (chosenOption) => {
     if (feedback) return;
 
     const elapsedMs = Math.max(150, Date.now() - questionStartRef.current);
-    const isCorrect = isAnswerCorrect(question, chosenScale);
+    const isCorrect = isAnswerCorrect(question, chosenOption);
 
     // Play immediate Cheer or Boo SFX (gently ducking background music without interrupting it)
     if (sfxEnabled) {
@@ -150,7 +151,8 @@ export default function App() {
     setWeakKeys(nextWeakKeys);
     setFeedback({
       isCorrect,
-      chosenScale,
+      chosenScale: question.mode === 'count' ? null : chosenOption,
+      chosenOption,
       elapsedMs,
     });
 
@@ -178,7 +180,15 @@ export default function App() {
   const isMajorQ = question.targetScale.quality === 'major';
   const isSharpQ = question.targetScale.accidentalType === 'sharp';
   const isFlatQ = question.targetScale.accidentalType === 'flat';
-  const showWheelPanel = promptStyle !== 'text';
+  const showWheelPanel = promptStyle === 'visual' || promptStyle === 'all';
+  const baseNoteLtr = question.targetScale.label.replace(/m$/, '');
+
+  const modeBadgeLabel =
+    question.mode === 'visual'
+      ? 'זיהוי על המעגל'
+      : question.mode === 'count'
+      ? 'זיהוי כמות דיאזים/במולים'
+      : 'זיהוי סולם לפי סימנים';
 
   return (
     <div className="min-h-screen flex flex-col text-slate-100 relative" dir="rtl">
@@ -187,7 +197,11 @@ export default function App() {
 
       {/* Header */}
       <header className="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-20">
-        <div className={`${showWheelPanel ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4 transition-all`}>
+        <div
+          className={`${
+            showWheelPanel ? 'max-w-6xl' : 'max-w-4xl'
+          } mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4 transition-all`}
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.38)] shrink-0">
               <SaxBadgeIcon className="w-6 h-6 text-slate-950" />
@@ -215,8 +229,12 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className={`relative z-10 flex-1 w-full ${showWheelPanel ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-4 sm:space-y-5 transition-all`}>
-        {/* Upbeat Tenor Saxophone Jazz Mini-Player + SFX Toggle */}
+      <main
+        className={`relative z-10 flex-1 w-full ${
+          showWheelPanel ? 'max-w-6xl' : 'max-w-4xl'
+        } mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-4 sm:space-y-5 transition-all`}
+      >
+        {/* Ad-Free Local MP3 Romantic Saxophone Player + Independent SFX Toggle */}
         <JazzAudioPlayer
           sfxEnabled={sfxEnabled}
           onToggleSfx={() => setSfxEnabled((v) => !v)}
@@ -247,8 +265,14 @@ export default function App() {
           onOpenCheatSheet={() => setIsCheatSheetOpen(true)}
         />
 
-        {/* Quiz Workspace: 2-Column with SVG Wheel in Visual/Mixed mode, Centered in Text-Only mode */}
-        <div className={showWheelPanel ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start' : 'space-y-4'}>
+        {/* Quiz Workspace */}
+        <div
+          className={
+            showWheelPanel
+              ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start'
+              : 'space-y-4'
+          }
+        >
           {showWheelPanel && (
             <div className="lg:col-span-5 rounded-2xl bg-slate-900/65 backdrop-blur-sm border border-slate-800/85 p-4 sm:p-5 flex flex-col items-center">
               <CircleOfFifthsSVG
@@ -296,7 +320,7 @@ export default function App() {
                   </span>
 
                   <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-800/80 text-slate-300 border border-slate-700/80">
-                    {question.mode === 'visual' ? 'זיהוי על המעגל' : 'שאלת סימני היתק'}
+                    {modeBadgeLabel}
                   </span>
                 </div>
 
@@ -326,6 +350,30 @@ export default function App() {
                   <p className="mt-1.5 text-xs text-slate-400">
                     במיקומים אנהרמוניים (5, 6 או 7), בחירה בכל אחת מהחלופות תיחשב נכונה.
                   </p>
+                </div>
+              ) : question.mode === 'count' ? (
+                <div className="mt-3.5">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-100 leading-relaxed">
+                    כמה דיאזים או במולים יש בסולם{' '}
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-lg font-extrabold ${
+                        isMajorQ
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/35'
+                          : 'bg-sky-500/20 text-sky-300 border border-sky-500/35'
+                      }`}
+                    >
+                      <span dir="ltr" className="music-ltr">
+                        {baseNoteLtr}
+                      </span>
+                      <span>{isMajorQ ? "מז'ור" : 'מינור'}</span>
+                    </span>
+                    ?
+                  </h2>
+                  {showHebrewNotes && (
+                    <p className="mt-1.5 text-xs text-slate-400">
+                      ({question.targetScale.hebrewFull})
+                    </p>
+                  )}
                 </div>
               ) : (
                 <h2 className="mt-3.5 text-xl sm:text-2xl font-bold text-slate-100 leading-relaxed">
@@ -376,16 +424,24 @@ export default function App() {
               onNext={() => startNextQuestion(scope, promptStyle, weakKeys)}
             />
 
-            {/* All-Options Clickable Answer Grid */}
+            {/* Dynamic Answer Grid: 15 Key Signature Buttons (for 'count') OR Scale Grid (for 'scale' & 'visual') */}
             <section className="rounded-2xl bg-slate-900/65 backdrop-blur-sm border border-slate-800/80 p-4 sm:p-5">
-              <AnswerGrid
-                scope={scope}
-                sortOrder={sortOrder}
-                showHebrewNotes={showHebrewNotes}
-                question={question}
-                feedback={feedback}
-                onAnswer={handleAnswer}
-              />
+              {question.mode === 'count' ? (
+                <SignatureAnswerGrid
+                  question={question}
+                  feedback={feedback}
+                  onAnswer={handleAnswer}
+                />
+              ) : (
+                <AnswerGrid
+                  scope={scope}
+                  sortOrder={sortOrder}
+                  showHebrewNotes={showHebrewNotes}
+                  question={question}
+                  feedback={feedback}
+                  onAnswer={handleAnswer}
+                />
+              )}
             </section>
           </div>
         </div>

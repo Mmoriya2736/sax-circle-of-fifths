@@ -73,9 +73,10 @@ export default function ControlBar({
             value={promptStyle}
             onChange={onPromptStyleChange}
             options={[
-              { value: 'text', label: 'שאלות טקסט' },
+              { value: 'scale', label: 'זיהוי סולם (לפי סימנים)' },
+              { value: 'count', label: 'זיהוי כמות דיאזים/במולים' },
               { value: 'visual', label: 'זיהוי על המעגל' },
-              { value: 'both', label: 'מעורב (גם וגם)' },
+              { value: 'all', label: 'הכל משולב (מומלץ)' },
             ]}
           />
 

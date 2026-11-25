@@ -1,51 +1,42 @@
 /**
- * Track manifest & audio ducking bridge for Angelo Torres Romantic Saxophone Player.
- * Supports:
- * 1. Primary Mode: Local MP3 files in ./audio/track1.mp3 .. track5.mp3 (HTML5 <audio>)
- * 2. Automatic Fallback Mode: YouTube IFrame Player API (video ID: ng2Ua9bk1Pg) with 5 chapter timestamps
+ * Ad-free Local MP3 Track Manifest & Audio Ducking Bridge.
+ * Plays exclusively from ./audio/track1.mp3 .. track5.mp3 (GitHub Pages compatible relative paths).
  */
-
-export const YOUTUBE_VIDEO_ID = 'ng2Ua9bk1Pg';
 
 export const ROMANTIC_SAX_TRACKS = [
   {
     id: 'track-1',
-    name: 'קטע 1 - I Miss You (פתיחה רומנטית)',
-    shortName: '1 · I Miss You',
+    name: 'שיר 1 - I Miss You (סקסופון רומנטי)',
+    shortName: 'שיר 1 · I Miss You',
     file: './audio/track1.mp3',
-    startSeconds: 0,
   },
   {
     id: 'track-2',
-    name: 'קטע 2 - בלדת סקסופון שקטה',
-    shortName: '2 · בלדת סקסופון שקטה',
+    name: 'שיר 2 - בלדת סקסופון שקטה',
+    shortName: 'שיר 2 · בלדה שקטה',
     file: './audio/track2.mp3',
-    startSeconds: 435,
   },
   {
     id: 'track-3',
-    name: 'קטע 3 - קלאסיקה אינסטרומנטלית',
-    shortName: '3 · קלאסיקה אינסטרומנטלית',
+    name: 'שיר 3 - מנגינת סקסופון קלאסית',
+    shortName: 'שיר 3 · קלאסית',
     file: './audio/track3.mp3',
-    startSeconds: 1120,
   },
   {
     id: 'track-4',
-    name: 'קטע 4 - סקסופון ערב רומנטי',
-    shortName: '4 · סקסופון ערב רומנטי',
+    name: 'שיר 4 - סולו טנור רגוע',
+    shortName: 'שיר 4 · סולו טנור',
     file: './audio/track4.mp3',
-    startSeconds: 2010,
   },
   {
     id: 'track-5',
-    name: 'קטע 5 - סולו טנור רגוע',
-    shortName: '5 · סולו טנור רגוע',
+    name: 'שיר 5 - סקסופון ערב רומנטי',
+    shortName: 'שיר 5 · ערב רומנטי',
     file: './audio/track5.mp3',
-    startSeconds: 3150,
   },
 ];
 
-// Lightweight bridge so App.jsx SFX can gently duck whichever player (HTML5 or YouTube) is active
+// Lightweight bridge so App.jsx SFX can gently duck the HTML5 audio player
 class AudioDuckBridge {
   constructor() {
     this.duckHandler = null;

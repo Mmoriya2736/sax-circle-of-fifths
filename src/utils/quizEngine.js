@@ -7,6 +7,30 @@ import {
 
 const STORAGE_KEY = 'sax_key_signatures_he_v2';
 
+export const SIGNATURE_OPTIONS = {
+  natural: {
+    id: 'none-0',
+    accidentalType: 'none',
+    accidentalCount: 0,
+    badge: '0',
+    hebrewLabel: 'ללא סימני היתק',
+  },
+  sharps: [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+    id: `sharp-${n}`,
+    accidentalType: 'sharp',
+    accidentalCount: n,
+    badge: `${n}♯`,
+    hebrewLabel: n === 1 ? 'דיאז אחד' : `${n} דיאזים`,
+  })),
+  flats: [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+    id: `flat-${n}`,
+    accidentalType: 'flat',
+    accidentalCount: n,
+    badge: `${n}♭`,
+    hebrewLabel: n === 1 ? 'במול אחד' : `${n} במולים`,
+  })),
+};
+
 export function loadPersistedData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -61,39 +85,45 @@ function pickWeightedScale(pool, weakKeys, lastScaleId) {
 }
 
 /**
- * Check if chosenScale is correct for a given question.
- * - Text questions specify exact sharp vs flat count -> exact scale id match.
- * - Visual Circle questions highlight a circle position -> any enharmonic equivalent at that position & quality is correct!
+ * Check if chosenOption is correct for the active question:
+ * - 'count': matches accidentalType & accidentalCount (0..7 sharps/flats)
+ * - 'visual': matches circlePosition & quality (either enharmonic button counts)
+ * - 'scale': exact scale id match
  */
-export function isAnswerCorrect(question, chosenScale) {
-  if (!question || !chosenScale) return false;
-  if (question.mode === 'visual') {
+export function isAnswerCorrect(question, chosenOption) {
+  if (!question || !chosenOption) return false;
+  if (question.mode === 'count') {
     return (
-      chosenScale.circlePosition === question.targetScale.circlePosition &&
-      chosenScale.quality === question.targetScale.quality
+      chosenOption.accidentalType === question.targetScale.accidentalType &&
+      chosenOption.accidentalCount === question.targetScale.accidentalCount
     );
   }
-  return chosenScale.id === question.targetScale.id;
+  if (question.mode === 'visual') {
+    return (
+      chosenOption.circlePosition === question.targetScale.circlePosition &&
+      chosenOption.quality === question.targetScale.quality
+    );
+  }
+  return chosenOption.id === question.targetScale.id;
 }
 
 /**
  * Generate a question based on scope ('major' | 'minor' | 'mixed')
- * and promptStyle ('text' | 'visual' | 'both').
+ * and promptStyle ('scale' | 'count' | 'visual' | 'all').
  */
-export function generateQuestion({ scope, promptStyle = 'both', weakKeys, lastScaleId }) {
+export function generateQuestion({ scope, promptStyle = 'all', weakKeys, lastScaleId }) {
   const pool = getPoolForScope(scope);
   const targetScale = pickWeightedScale(pool, weakKeys, lastScaleId);
   const isWeakReview = Boolean(weakKeys[targetScale.id]);
 
+  const modes = ['scale', 'count', 'visual'];
   const mode =
-    promptStyle === 'both'
-      ? Math.random() < 0.5
-        ? 'visual'
-        : 'text'
+    promptStyle === 'all'
+      ? modes[Math.floor(Math.random() * modes.length)]
       : promptStyle;
 
   return {
-    id: `${targetScale.id}-${Date.now()}`,
+    id: `${targetScale.id}-${mode}-${Date.now()}`,
     mode,
     targetScale,
     isWeakReview,
