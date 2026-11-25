@@ -49,11 +49,11 @@ export default function JazzAudioPlayer() {
     <div
       className={`w-full rounded-2xl border px-3.5 py-3 sm:px-4 sm:py-3 backdrop-blur-sm transition-all space-y-2.5 ${
         isPlaying
-          ? 'bg-amber-500/[0.08] border-amber-500/35 shadow-[0_0_24px_rgba(245,158,11,0.08)]'
+          ? 'bg-amber-500/[0.09] border-amber-500/40 shadow-[0_0_24px_rgba(245,158,11,0.1)]'
           : 'bg-slate-900/70 border-slate-800/85'
       }`}
     >
-      {/* Top row: Play/Pause + Title + Volume */}
+      {/* Top row: Play/Pause + Label & Track info + Volume */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -76,7 +76,7 @@ export default function JazzAudioPlayer() {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-xs sm:text-sm font-bold text-slate-100 truncate">
-                מוזיקת רקע (סקסופון טנור ג&apos;אז)
+                מוזיקת רקע (סקסופון איביזה וג&apos;אז)
               </span>
               {isPlaying && (
                 <span className="inline-flex items-end gap-0.5 h-3" aria-hidden="true">
@@ -127,8 +127,8 @@ export default function JazzAudioPlayer() {
         </div>
       </div>
 
-      {/* Direct Track Selector Pills (4 upbeat tenor grooves) */}
-      <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-800/60">
+      {/* Direct 5-Track Pill Selector */}
+      <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-slate-800/60">
         {JAZZ_TRACKS.map((track, idx) => {
           const active = idx === trackIndex;
           return (
@@ -138,7 +138,7 @@ export default function JazzAudioPlayer() {
               onClick={() => handleSelectTrack(idx)}
               className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
                 active
-                  ? 'bg-amber-500/20 text-amber-200 border border-amber-500/50'
+                  ? 'bg-amber-500/20 text-amber-200 border border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
                   : 'bg-slate-950/65 text-slate-400 border border-slate-800 hover:text-slate-200 hover:border-slate-700'
               }`}
             >
