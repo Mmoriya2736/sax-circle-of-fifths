@@ -1,5 +1,12 @@
 import React from 'react';
-import { BookOpen, Music, ArrowUpDown, Compass, Languages } from 'lucide-react';
+import {
+  BookOpen,
+  Music,
+  ArrowUpDown,
+  Compass,
+  SlidersHorizontal,
+  Languages,
+} from 'lucide-react';
 
 function PillGroup({ label, icon, options, value, onChange }) {
   return (
@@ -34,6 +41,8 @@ function PillGroup({ label, icon, options, value, onChange }) {
 export default function ControlBar({
   scope,
   onScopeChange,
+  promptStyle,
+  onPromptStyleChange,
   sortOrder,
   onSortOrderChange,
   saxMode,
@@ -59,6 +68,18 @@ export default function ControlBar({
           />
 
           <PillGroup
+            label="סוג שאלות"
+            icon={<SlidersHorizontal className="w-3.5 h-3.5 text-amber-400" />}
+            value={promptStyle}
+            onChange={onPromptStyleChange}
+            options={[
+              { value: 'text', label: 'שאלות טקסט' },
+              { value: 'visual', label: 'זיהוי על המעגל' },
+              { value: 'both', label: 'מעורב (גם וגם)' },
+            ]}
+          />
+
+          <PillGroup
             label="סדר כפתורים"
             icon={<ArrowUpDown className="w-3.5 h-3.5 text-amber-400" />}
             value={sortOrder}
@@ -70,7 +91,7 @@ export default function ControlBar({
           />
         </div>
 
-        {/* Action buttons: Hebrew note subtitles + Cheat Sheet modal */}
+        {/* Action buttons: Hebrew note subtitles + Full Circle / Cheat Sheet modal */}
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
@@ -92,7 +113,7 @@ export default function ControlBar({
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border bg-slate-800/85 border-slate-700 text-slate-200 hover:border-amber-500/60 hover:text-amber-200 transition-all cursor-pointer"
           >
             <BookOpen className="w-4 h-4 text-amber-400" />
-            <span>טבלת סולמות לעזרה</span>
+            <span>הצג מעגל מלא / טבלה</span>
           </button>
         </div>
       </div>

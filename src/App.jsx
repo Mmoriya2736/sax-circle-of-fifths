@@ -6,9 +6,11 @@ import AnswerGrid from './components/AnswerGrid';
 import FeedbackBanner from './components/FeedbackBanner';
 import CheatSheetModal from './components/CheatSheetModal';
 import JazzAudioPlayer from './components/JazzAudioPlayer';
+import CircleOfFifthsSVG from './components/CircleOfFifthsSVG';
 import SaxBackgroundDecor, { SaxBadgeIcon } from './components/SaxBackgroundDecor';
 import {
   generateQuestion,
+  isAnswerCorrect,
   loadPersistedData,
   savePersistedData,
 } from './utils/quizEngine';
@@ -18,6 +20,7 @@ export default function App() {
 
   // Practice settings
   const [scope, setScope] = useState('major'); // 'major' | 'minor' | 'mixed'
+  const [promptStyle, setPromptStyle] = useState('both'); // 'text' | 'visual' | 'both' (default)
   const [sortOrder, setSortOrder] = useState('chromatic'); // 'chromatic' | 'fifths'
   const [saxMode, setSaxMode] = useState('concert'); // 'concert' | 'eb' | 'bb'
   const [showHebrewNotes, setShowHebrewNotes] = useState(true);
@@ -37,6 +40,7 @@ export default function App() {
   const [question, setQuestion] = useState(() =>
     generateQuestion({
       scope: 'major',
+      promptStyle: 'both',
       weakKeys: persisted.current.weakKeys,
       lastScaleId: null,
     })
@@ -65,31 +69,37 @@ export default function App() {
   }, [bestStreak, weakKeys]);
 
   const startNextQuestion = useCallback(
-    (nextScope = scope, nextWeakKeys = weakKeys) => {
+    (nextScope = scope, nextPromptStyle = promptStyle, nextWeakKeys = weakKeys) => {
       clearAdvanceTimer();
       setFeedback(null);
       setQuestion((prev) =>
         generateQuestion({
           scope: nextScope,
+          promptStyle: nextPromptStyle,
           weakKeys: nextWeakKeys,
           lastScaleId: prev?.targetScale?.id || null,
         })
       );
       questionStartRef.current = Date.now();
     },
-    [scope, weakKeys, clearAdvanceTimer]
+    [scope, promptStyle, weakKeys, clearAdvanceTimer]
   );
 
   const handleScopeChange = (newScope) => {
     setScope(newScope);
-    startNextQuestion(newScope, weakKeys);
+    startNextQuestion(newScope, promptStyle, weakKeys);
+  };
+
+  const handlePromptStyleChange = (newStyle) => {
+    setPromptStyle(newStyle);
+    startNextQuestion(scope, newStyle, weakKeys);
   };
 
   const handleAnswer = (chosenScale) => {
     if (feedback) return;
 
     const elapsedMs = Math.max(150, Date.now() - questionStartRef.current);
-    const isCorrect = chosenScale.id === question.targetScale.id;
+    const isCorrect = isAnswerCorrect(question, chosenScale);
 
     setSessionTotal((n) => n + 1);
     setTotalResponseMs((ms) => ms + elapsedMs);
@@ -131,12 +141,11 @@ export default function App() {
       elapsedMs,
     });
 
-    // 600ms auto-advance on right answer (1400ms when sax transposition hint is active)
     const delayMs = isCorrect ? (saxMode === 'concert' ? 600 : 1400) : 3800;
 
     clearAdvanceTimer();
     advanceTimerRef.current = setTimeout(() => {
-      startNextQuestion(scope, nextWeakKeys);
+      startNextQuestion(scope, promptStyle, nextWeakKeys);
     }, delayMs);
   };
 
@@ -146,7 +155,7 @@ export default function App() {
     setSessionCorrect(0);
     setSessionTotal(0);
     setTotalResponseMs(0);
-    startNextQuestion(scope, weakKeys);
+    startNextQuestion(scope, promptStyle, weakKeys);
   };
 
   const accuracy = sessionTotal > 0 ? (sessionCorrect / sessionTotal) * 100 : 0;
@@ -156,6 +165,7 @@ export default function App() {
   const isMajorQ = question.targetScale.quality === 'major';
   const isSharpQ = question.targetScale.accidentalType === 'sharp';
   const isFlatQ = question.targetScale.accidentalType === 'flat';
+  const showWheelPanel = promptStyle !== 'text';
 
   return (
     <div className="min-h-screen flex flex-col text-slate-100 relative" dir="rtl">
@@ -164,7 +174,7 @@ export default function App() {
 
       {/* Header */}
       <header className="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+        <div className={`${showWheelPanel ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4 transition-all`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.38)] shrink-0">
               <SaxBadgeIcon className="w-6 h-6 text-slate-950" />
@@ -174,7 +184,7 @@ export default function App() {
                 מעגל הקווינטות — סימני היתק
               </h1>
               <p className="text-[11px] sm:text-xs text-slate-400">
-                אימון דיאזים ובמולים לנגני סקסופון
+                אימון דיאזים, במולים וזיהוי על המעגל לנגני סקסופון
               </p>
             </div>
           </div>
@@ -191,9 +201,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Content — Clean Centered Layout */}
-      <main className="relative z-10 flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-4 sm:space-y-5">
-        {/* Background Smooth Jazz Saxophone Mini-Player */}
+      {/* Main Content */}
+      <main className={`relative z-10 flex-1 w-full ${showWheelPanel ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-4 sm:space-y-5 transition-all`}>
+        {/* Upbeat Tenor Saxophone Jazz Mini-Player */}
         <JazzAudioPlayer />
 
         {/* Stats Bar */}
@@ -210,6 +220,8 @@ export default function App() {
         <ControlBar
           scope={scope}
           onScopeChange={handleScopeChange}
+          promptStyle={promptStyle}
+          onPromptStyleChange={handlePromptStyleChange}
           sortOrder={sortOrder}
           onSortOrderChange={setSortOrder}
           saxMode={saxMode}
@@ -219,99 +231,151 @@ export default function App() {
           onOpenCheatSheet={() => setIsCheatSheetOpen(true)}
         />
 
-        {/* Focused Key Signature Prompt Card */}
-        <section
-          className={`rounded-2xl border p-5 sm:p-7 backdrop-blur-sm transition-colors ${
-            isMajorQ
-              ? 'bg-gradient-to-b from-amber-500/[0.08] to-slate-900/85 border-amber-500/30'
-              : 'bg-gradient-to-b from-sky-500/[0.09] to-slate-900/85 border-sky-500/30'
-          }`}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${
-                isMajorQ
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
-                  : 'bg-sky-500/20 text-sky-300 border-sky-400/40'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  isMajorQ ? 'bg-amber-400' : 'bg-sky-400'
-                }`}
+        {/* Quiz Workspace: 2-Column with SVG Wheel in Visual/Mixed mode, Centered in Text-Only mode */}
+        <div className={showWheelPanel ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start' : 'space-y-4'}>
+          {showWheelPanel && (
+            <div className="lg:col-span-5 rounded-2xl bg-slate-900/65 backdrop-blur-sm border border-slate-800/85 p-4 sm:p-5 flex flex-col items-center">
+              <CircleOfFifthsSVG
+                question={question}
+                feedback={feedback}
+                scope={scope}
               />
-              {isMajorQ ? "סולם מז'ור" : 'סולם מינור'}
-            </span>
+              <div className="mt-3 flex items-center justify-center gap-5 text-[11.5px] text-slate-400">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                  טבעת חיצונית: מז&apos;ור
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-400" />
+                  טבעת פנימית: מינור מקביל
+                </span>
+              </div>
+            </div>
+          )}
 
-            {question.isWeakReview && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                <Sparkles className="w-3 h-3" />
-                חזרה מחוזקת
-              </span>
-            )}
-          </div>
-
-          <h2 className="mt-4 text-2xl sm:text-3xl font-bold text-slate-100 leading-relaxed">
-            מהו הסולם{' '}
-            <span
-              className={`inline-block px-2.5 py-0.5 rounded-lg font-extrabold ${
+          <div className={showWheelPanel ? 'lg:col-span-7 space-y-4' : 'space-y-4'}>
+            {/* Prompt Card */}
+            <section
+              className={`rounded-2xl border p-5 sm:p-6 backdrop-blur-sm transition-colors ${
                 isMajorQ
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/35'
-                  : 'bg-sky-500/20 text-sky-300 border border-sky-500/35'
+                  ? 'bg-gradient-to-b from-amber-500/[0.08] to-slate-900/85 border-amber-500/30'
+                  : 'bg-gradient-to-b from-sky-500/[0.09] to-slate-900/85 border-sky-500/30'
               }`}
             >
-              {isMajorQ ? "המז'ורי" : 'המינורי'}
-            </span>{' '}
-            {question.isZero ? (
-              <>
-                שאין בו{' '}
-                <strong className="font-extrabold text-white underline decoration-slate-500 underline-offset-4">
-                  דיאזים או במולים (0)
-                </strong>
-                ?
-              </>
-            ) : (
-              <>
-                שיש בו{' '}
-                <strong
-                  className={`font-extrabold ${
-                    isSharpQ
-                      ? 'text-amber-200'
-                      : isFlatQ
-                      ? 'text-sky-200'
-                      : 'text-white'
-                  }`}
-                >
-                  {question.signaturePhrase}
-                </strong>
-                ?
-              </>
-            )}
-          </h2>
-        </section>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${
+                      isMajorQ
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                        : 'bg-sky-500/20 text-sky-300 border-sky-400/40'
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        isMajorQ ? 'bg-amber-400' : 'bg-sky-400'
+                      }`}
+                    />
+                    {isMajorQ ? "סולם מז'ור" : 'סולם מינור'}
+                  </span>
 
-        {/* Instant Feedback Banner */}
-        <FeedbackBanner
-          question={question}
-          feedback={feedback}
-          saxMode={saxMode}
-          onNext={() => startNextQuestion(scope, weakKeys)}
-        />
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-800/80 text-slate-300 border border-slate-700/80">
+                    {question.mode === 'visual' ? 'זיהוי על המעגל' : 'שאלת סימני היתק'}
+                  </span>
+                </div>
 
-        {/* All-Options Clickable Answer Grid */}
-        <section className="rounded-2xl bg-slate-900/65 backdrop-blur-sm border border-slate-800/80 p-4 sm:p-5">
-          <AnswerGrid
-            scope={scope}
-            sortOrder={sortOrder}
-            showHebrewNotes={showHebrewNotes}
-            question={question}
-            feedback={feedback}
-            onAnswer={handleAnswer}
-          />
-        </section>
+                {question.isWeakReview && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                    <Sparkles className="w-3 h-3" />
+                    חזרה מחוזקת
+                  </span>
+                )}
+              </div>
+
+              {question.mode === 'visual' ? (
+                <div className="mt-3.5">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-100 leading-relaxed">
+                    זהה את הסולם{' '}
+                    <span
+                      className={`inline-block px-2.5 py-0.5 rounded-lg font-extrabold ${
+                        isMajorQ
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/35'
+                          : 'bg-sky-500/20 text-sky-300 border border-sky-500/35'
+                      }`}
+                    >
+                      {isMajorQ ? "המז'ורי (טבעת חיצונית)" : 'המינורי (טבעת פנימית)'}
+                    </span>{' '}
+                    המסומן במעגל
+                  </h2>
+                  <p className="mt-1.5 text-xs text-slate-400">
+                    במיקומים אנהרמוניים (5, 6 או 7), בחירה בכל אחת מהחלופות תיחשב נכונה.
+                  </p>
+                </div>
+              ) : (
+                <h2 className="mt-3.5 text-xl sm:text-2xl font-bold text-slate-100 leading-relaxed">
+                  מהו הסולם{' '}
+                  <span
+                    className={`inline-block px-2.5 py-0.5 rounded-lg font-extrabold ${
+                      isMajorQ
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/35'
+                        : 'bg-sky-500/20 text-sky-300 border border-sky-500/35'
+                    }`}
+                  >
+                    {isMajorQ ? "המז'ורי" : 'המינורי'}
+                  </span>{' '}
+                  {question.isZero ? (
+                    <>
+                      שאין בו{' '}
+                      <strong className="font-extrabold text-white underline decoration-slate-500 underline-offset-4">
+                        דיאזים או במולים (0)
+                      </strong>
+                      ?
+                    </>
+                  ) : (
+                    <>
+                      שיש בו{' '}
+                      <strong
+                        className={`font-extrabold ${
+                          isSharpQ
+                            ? 'text-amber-200'
+                            : isFlatQ
+                            ? 'text-sky-200'
+                            : 'text-white'
+                        }`}
+                      >
+                        {question.signaturePhrase}
+                      </strong>
+                      ?
+                    </>
+                  )}
+                </h2>
+              )}
+            </section>
+
+            {/* Instant Feedback Banner */}
+            <FeedbackBanner
+              question={question}
+              feedback={feedback}
+              saxMode={saxMode}
+              onNext={() => startNextQuestion(scope, promptStyle, weakKeys)}
+            />
+
+            {/* All-Options Clickable Answer Grid */}
+            <section className="rounded-2xl bg-slate-900/65 backdrop-blur-sm border border-slate-800/80 p-4 sm:p-5">
+              <AnswerGrid
+                scope={scope}
+                sortOrder={sortOrder}
+                showHebrewNotes={showHebrewNotes}
+                question={question}
+                feedback={feedback}
+                onAnswer={handleAnswer}
+              />
+            </section>
+          </div>
+        </div>
       </main>
 
-      {/* Cheat Sheet Reference Modal */}
+      {/* Full Circle + Cheat Sheet Reference Modal */}
       <CheatSheetModal
         isOpen={isCheatSheetOpen}
         onClose={() => setIsCheatSheetOpen(false)}

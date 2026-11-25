@@ -1,5 +1,6 @@
 import React from 'react';
 import { MAJOR_SCALES, MINOR_SCALES, sortScales } from '../data/circleOfFifths';
+import { isAnswerCorrect } from '../utils/quizEngine';
 
 export default function AnswerGrid({
   scope,
@@ -28,7 +29,7 @@ export default function AnswerGrid({
 
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
         {scales.map((scale) => {
-          const isCorrectScale = feedback && question?.targetScale?.id === scale.id;
+          const isCorrectScale = feedback && isAnswerCorrect(question, scale);
           const isChosenWrong =
             feedback && !feedback.isCorrect && feedback.chosenScale?.id === scale.id;
           const isChosenCorrect =

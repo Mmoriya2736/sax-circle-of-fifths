@@ -45,6 +45,19 @@
   animation: shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
+@keyframes pulse-brass {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.55));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(251, 191, 36, 0.95));
+  }
+}
+
+.animate-pulse-brass {
+  animation: pulse-brass 1.8s ease-in-out infinite;
+}
+
 @keyframes fade-slide-up {
   from {
     opacity: 0;

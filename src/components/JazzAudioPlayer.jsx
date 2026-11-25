@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipForward, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { jazzAudioEngine, JAZZ_TRACKS } from '../utils/jazzAudioEngine';
 
 export default function JazzAudioPlayer() {
@@ -29,10 +29,9 @@ export default function JazzAudioPlayer() {
     }
   };
 
-  const handleNextTrack = () => {
-    const next = (trackIndex + 1) % JAZZ_TRACKS.length;
-    setTrackIndex(next);
-    jazzAudioEngine.setTrack(next);
+  const handleSelectTrack = (idx) => {
+    setTrackIndex(idx);
+    jazzAudioEngine.setTrack(idx);
   };
 
   const handleToggleMute = () => {
@@ -48,63 +47,56 @@ export default function JazzAudioPlayer() {
 
   return (
     <div
-      className={`w-full rounded-2xl border px-3.5 py-2.5 sm:px-4 sm:py-3 backdrop-blur-sm transition-all flex flex-wrap items-center justify-between gap-3 ${
+      className={`w-full rounded-2xl border px-3.5 py-3 sm:px-4 sm:py-3 backdrop-blur-sm transition-all space-y-2.5 ${
         isPlaying
           ? 'bg-amber-500/[0.08] border-amber-500/35 shadow-[0_0_24px_rgba(245,158,11,0.08)]'
-          : 'bg-slate-900/65 border-slate-800/85'
+          : 'bg-slate-900/70 border-slate-800/85'
       }`}
     >
-      {/* Left side (RTL right): Play/Pause + Label & Track info */}
-      <div className="flex items-center gap-3 min-w-0">
-        <button
-          type="button"
-          onClick={handleTogglePlay}
-          aria-label={isPlaying ? 'השהה מוזיקת רקע' : 'נגן מוזיקת רקע'}
-          className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all cursor-pointer ${
-            isPlaying
-              ? 'bg-amber-500 text-slate-950 shadow-[0_0_14px_rgba(245,158,11,0.45)] hover:bg-amber-400'
-              : 'bg-slate-800 text-amber-400 border border-amber-500/35 hover:bg-amber-500/15'
-          }`}
-        >
-          {isPlaying ? (
-            <Pause className="w-4 h-4 fill-current" />
-          ) : (
-            <Play className="w-4 h-4 fill-current mr-0.5" />
-          )}
-        </button>
-
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs sm:text-sm font-bold text-slate-100 truncate">
-              מוזיקת רקע (סקסופון ג&apos;אז)
-            </span>
-            {isPlaying && (
-              <span className="inline-flex items-end gap-0.5 h-3" aria-hidden="true">
-                <span className="w-0.5 bg-amber-400 rounded-full animate-eq-1" />
-                <span className="w-0.5 bg-amber-300 rounded-full animate-eq-2" />
-                <span className="w-0.5 bg-amber-400 rounded-full animate-eq-3" />
-              </span>
+      {/* Top row: Play/Pause + Title + Volume */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            type="button"
+            onClick={handleTogglePlay}
+            aria-label={isPlaying ? 'השהה מוזיקת רקע' : 'נגן מוזיקת רקע'}
+            className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all cursor-pointer ${
+              isPlaying
+                ? 'bg-amber-500 text-slate-950 shadow-[0_0_14px_rgba(245,158,11,0.45)] hover:bg-amber-400'
+                : 'bg-slate-800 text-amber-400 border border-amber-500/35 hover:bg-amber-500/15'
+            }`}
+          >
+            {isPlaying ? (
+              <Pause className="w-4 h-4 fill-current" />
+            ) : (
+              <Play className="w-4 h-4 fill-current mr-0.5" />
             )}
-          </div>
-          <div className="text-[11px] text-slate-400 truncate">
-            {currentTrack.name} · {currentTrack.subtitle}
+          </button>
+
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-slate-100 truncate">
+                מוזיקת רקע (סקסופון טנור ג&apos;אז)
+              </span>
+              {isPlaying && (
+                <span className="inline-flex items-end gap-0.5 h-3" aria-hidden="true">
+                  <span className="w-0.5 bg-amber-400 rounded-full animate-eq-1" />
+                  <span className="w-0.5 bg-amber-300 rounded-full animate-eq-2" />
+                  <span className="w-0.5 bg-amber-400 rounded-full animate-eq-3" />
+                </span>
+              )}
+            </div>
+            <div className="text-[11px] text-slate-400 truncate">
+              {currentTrack.name} ·{' '}
+              <span dir="ltr" className="music-ltr">
+                {currentTrack.subtitle}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Track Switcher + Volume Slider */}
-      <div className="flex items-center gap-3 mr-auto sm:mr-0">
-        <button
-          type="button"
-          onClick={handleNextTrack}
-          title="החלף קטע ג'אז"
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-700/90 border border-slate-700/80 text-[11px] font-semibold text-slate-200 hover:text-amber-200 transition-colors cursor-pointer"
-        >
-          <SkipForward className="w-3.5 h-3.5 text-amber-400" />
-          <span>קטע הבא</span>
-        </button>
-
-        <div className="flex items-center gap-2">
+        {/* Volume Slider */}
+        <div className="flex items-center gap-2 mr-auto sm:mr-0">
           <button
             type="button"
             onClick={handleToggleMute}
@@ -133,6 +125,27 @@ export default function JazzAudioPlayer() {
             {Math.round((volume / 0.8) * 100)}%
           </span>
         </div>
+      </div>
+
+      {/* Direct Track Selector Pills (4 upbeat tenor grooves) */}
+      <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-800/60">
+        {JAZZ_TRACKS.map((track, idx) => {
+          const active = idx === trackIndex;
+          return (
+            <button
+              key={track.id}
+              type="button"
+              onClick={() => handleSelectTrack(idx)}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                active
+                  ? 'bg-amber-500/20 text-amber-200 border border-amber-500/50'
+                  : 'bg-slate-950/65 text-slate-400 border border-slate-800 hover:text-slate-200 hover:border-slate-700'
+              }`}
+            >
+              {track.name}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

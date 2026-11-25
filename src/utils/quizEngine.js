@@ -61,15 +61,40 @@ function pickWeightedScale(pool, weakKeys, lastScaleId) {
 }
 
 /**
- * Generate a key-signature-only Hebrew text question.
+ * Check if chosenScale is correct for a given question.
+ * - Text questions specify exact sharp vs flat count -> exact scale id match.
+ * - Visual Circle questions highlight a circle position -> any enharmonic equivalent at that position & quality is correct!
  */
-export function generateQuestion({ scope, weakKeys, lastScaleId }) {
+export function isAnswerCorrect(question, chosenScale) {
+  if (!question || !chosenScale) return false;
+  if (question.mode === 'visual') {
+    return (
+      chosenScale.circlePosition === question.targetScale.circlePosition &&
+      chosenScale.quality === question.targetScale.quality
+    );
+  }
+  return chosenScale.id === question.targetScale.id;
+}
+
+/**
+ * Generate a question based on scope ('major' | 'minor' | 'mixed')
+ * and promptStyle ('text' | 'visual' | 'both').
+ */
+export function generateQuestion({ scope, promptStyle = 'both', weakKeys, lastScaleId }) {
   const pool = getPoolForScope(scope);
   const targetScale = pickWeightedScale(pool, weakKeys, lastScaleId);
   const isWeakReview = Boolean(weakKeys[targetScale.id]);
 
+  const mode =
+    promptStyle === 'both'
+      ? Math.random() < 0.5
+        ? 'visual'
+        : 'text'
+      : promptStyle;
+
   return {
     id: `${targetScale.id}-${Date.now()}`,
+    mode,
     targetScale,
     isWeakReview,
     signaturePhrase: formatSignatureHe(targetScale),
