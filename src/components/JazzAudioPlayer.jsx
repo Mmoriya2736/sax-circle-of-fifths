@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { jazzAudioEngine, JAZZ_TRACKS } from '../utils/jazzAudioEngine';
 
 export default function JazzAudioPlayer() {
@@ -7,25 +7,28 @@ export default function JazzAudioPlayer() {
   const [trackIndex, setTrackIndex] = useState(0);
   const [volume, setVolume] = useState(0.25);
   const [prevVolume, setPrevVolume] = useState(0.25);
+  const [sampleStatus, setSampleStatus] = useState('idle');
 
   useEffect(() => {
     jazzAudioEngine.setVolume(volume);
   }, [volume]);
 
   useEffect(() => {
+    const unsub = jazzAudioEngine.onStatusChange(setSampleStatus);
     return () => {
+      unsub();
       jazzAudioEngine.stop();
     };
   }, []);
 
-  const handleTogglePlay = () => {
+  const handleTogglePlay = async () => {
     if (isPlaying) {
       jazzAudioEngine.stop();
       setIsPlaying(false);
     } else {
       jazzAudioEngine.setVolume(volume);
-      jazzAudioEngine.start();
       setIsPlaying(true);
+      await jazzAudioEngine.start();
     }
   };
 
@@ -44,6 +47,7 @@ export default function JazzAudioPlayer() {
   };
 
   const currentTrack = JAZZ_TRACKS[trackIndex];
+  const isLoadingSamples = sampleStatus === 'loading';
 
   return (
     <div
@@ -66,7 +70,9 @@ export default function JazzAudioPlayer() {
                 : 'bg-slate-800 text-amber-400 border border-amber-500/35 hover:bg-amber-500/15'
             }`}
           >
-            {isPlaying ? (
+            {isLoadingSamples ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : isPlaying ? (
               <Pause className="w-4 h-4 fill-current" />
             ) : (
               <Play className="w-4 h-4 fill-current mr-0.5" />
@@ -74,15 +80,25 @@ export default function JazzAudioPlayer() {
           </button>
 
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs sm:text-sm font-bold text-slate-100 truncate">
-                מוזיקת רקע (סולו סקסופון · איביזה וג&apos;אז)
+                מוזיקת רקע (סולו סקסופון טנור)
               </span>
-              {isPlaying && (
+              {isPlaying && !isLoadingSamples && (
                 <span className="inline-flex items-end gap-0.5 h-3" aria-hidden="true">
                   <span className="w-0.5 bg-amber-400 rounded-full animate-eq-1" />
                   <span className="w-0.5 bg-amber-300 rounded-full animate-eq-2" />
                   <span className="w-0.5 bg-amber-400 rounded-full animate-eq-3" />
+                </span>
+              )}
+              {sampleStatus === 'loading' && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  טוען דגימות טנור...
+                </span>
+              )}
+              {sampleStatus === 'ready' && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                  סקסופון טנור אמיתי
                 </span>
               )}
             </div>

@@ -1,16 +1,37 @@
 /**
- * Self-contained Web Audio API Expressive Saxophone & Ibiza/Chillout/Nu-Jazz Engine.
- * 100% offline, zero external audio URLs, CORS-free for GitHub Pages.
+ * Real Studio-Sampled Tenor Saxophone (FluidR3_GM GM #66) + Ibiza/Chillout/Nu-Jazz Engine.
  *
- * Mix Priority:
- * - Prominent, singing Saxophone lead with mid-presence warmth, pitch-bend scoops,
- *   swelling vibrato, breathy filter dynamics, algorithmic stereo hall reverb, and ping-pong echo.
- * - Supportive, warm backing grooves (dreamy chillout Rhodes, heartbeat house kick, soft bass).
+ * - Loads authentic multi-sampled Tenor Saxophone MP3s from CORS-enabled FluidR3_GM CDNs
+ *   (with automatic fallback to a warm formant-filtered Web Audio synth if completely offline).
+ * - Adds human tenor sax expression directly onto the real audio samples:
+ *   • Upward pitch-bend scoops (-120 -> 0 cents over 65-90ms)
+ *   • Natural phrasing with breathing rests and velocity dynamics
+ *   • Delayed vibrato (~5.2 Hz) blooming 350ms after note onset
+ *   • Lush stereo hall convolver reverb + warm ping-pong echo
  */
 
 function midiToFreq(midi) {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
+
+// 10 anchor notes spanning concert A2 (45) to E5 (76) — max ±1 semitone pitch shift
+const TENOR_SAMPLE_ANCHORS = [
+  { midi: 48, file: 'C3' },
+  { midi: 51, file: 'Eb3' },
+  { midi: 54, file: 'Gb3' },
+  { midi: 57, file: 'A3' },
+  { midi: 60, file: 'C4' },
+  { midi: 63, file: 'Eb4' },
+  { midi: 66, file: 'Gb4' },
+  { midi: 69, file: 'A4' },
+  { midi: 72, file: 'C5' },
+  { midi: 75, file: 'Eb5' },
+];
+
+const SOUNDFONT_CDNS = [
+  'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/tenor_sax-mp3',
+  'https://cdn.jsdelivr.net/gh/gleitz/midi-js-soundfonts@gh-pages/FluidR3_GM/tenor_sax-mp3',
+];
 
 export const JAZZ_TRACKS = [
   {
@@ -21,7 +42,7 @@ export const JAZZ_TRACKS = [
     style: 'sunset',
     bars: [
       {
-        // Am9 — soaring, emotional Jubel-inspired sunset melody
+        // Am9 — soaring romantic tenor sax phrasing with natural breath rests
         pad: [57, 60, 64, 67, 71],
         bass: [
           { beat: 0.0, midi: 45, dur: 1.5 },
@@ -29,10 +50,10 @@ export const JAZZ_TRACKS = [
           { beat: 3.5, midi: 43, dur: 0.45 },
         ],
         melody: [
-          { beat: 0.0, midi: 69, dur: 0.9, vel: 0.92, scoop: true },
-          { beat: 1.0, midi: 72, dur: 0.85, vel: 0.96, scoop: true },
-          { beat: 2.0, midi: 76, dur: 1.35, vel: 1.0, scoop: true },
-          { beat: 3.5, midi: 74, dur: 0.45, vel: 0.86 },
+          { beat: 0.0, midi: 60, dur: 0.9, vel: 0.85, scoop: true },
+          { beat: 1.0, midi: 64, dur: 0.85, vel: 0.92, scoop: true },
+          { beat: 2.0, midi: 67, dur: 1.5, vel: 1.0, scoop: true },
+          // Breath space on beat 3.5..4.0
         ],
       },
       {
@@ -44,10 +65,9 @@ export const JAZZ_TRACKS = [
           { beat: 3.5, midi: 40, dur: 0.45 },
         ],
         melody: [
-          { beat: 0.0, midi: 72, dur: 1.2, vel: 0.95, scoop: true },
-          { beat: 1.5, midi: 69, dur: 0.85, vel: 0.9 },
-          { beat: 2.5, midi: 67, dur: 0.65, vel: 0.86 },
-          { beat: 3.25, midi: 69, dur: 0.7, vel: 0.92, scoop: true },
+          { beat: 0.25, midi: 69, dur: 1.35, vel: 0.96, scoop: true },
+          { beat: 1.75, midi: 67, dur: 0.65, vel: 0.84 },
+          { beat: 2.5, midi: 64, dur: 1.15, vel: 0.88 },
         ],
       },
       {
@@ -59,10 +79,9 @@ export const JAZZ_TRACKS = [
           { beat: 3.5, midi: 40, dur: 0.45 },
         ],
         melody: [
-          { beat: 0.0, midi: 72, dur: 0.9, vel: 0.94, scoop: true },
-          { beat: 1.0, midi: 74, dur: 0.85, vel: 0.96, scoop: true },
-          { beat: 2.0, midi: 76, dur: 0.9, vel: 0.98, scoop: true },
-          { beat: 3.0, midi: 79, dur: 0.95, vel: 1.0, scoop: true },
+          { beat: 0.0, midi: 64, dur: 0.85, vel: 0.88, scoop: true },
+          { beat: 1.0, midi: 67, dur: 0.85, vel: 0.94, scoop: true },
+          { beat: 2.0, midi: 71, dur: 1.55, vel: 1.0, scoop: true },
         ],
       },
       {
@@ -74,10 +93,10 @@ export const JAZZ_TRACKS = [
           { beat: 3.5, midi: 47, dur: 0.45 },
         ],
         melody: [
-          { beat: 0.0, midi: 76, dur: 1.15, vel: 0.94, scoop: true },
-          { beat: 1.25, midi: 74, dur: 0.95, vel: 0.9 },
-          { beat: 2.5, midi: 72, dur: 0.65, vel: 0.88 },
-          { beat: 3.25, midi: 71, dur: 0.7, vel: 0.9 },
+          { beat: 0.25, midi: 69, dur: 1.1, vel: 0.92, scoop: true },
+          { beat: 1.5, midi: 67, dur: 0.85, vel: 0.86 },
+          { beat: 2.5, midi: 64, dur: 1.0, vel: 0.82 },
+          // Natural breathing pause before loop
         ],
       },
     ],
@@ -90,16 +109,16 @@ export const JAZZ_TRACKS = [
     style: 'lounge',
     bars: [
       {
-        // Fmaj9 — intimate, lyrical tenor sax by the ocean
+        // Fmaj9 — warm, breathy lower-mid tenor register (D3–C5)
         pad: [53, 57, 60, 64, 67],
         bass: [
           { beat: 0.0, midi: 41, dur: 2.2 },
           { beat: 2.5, midi: 48, dur: 1.4 },
         ],
         melody: [
-          { beat: 0.0, midi: 65, dur: 1.35, vel: 0.94, scoop: true },
-          { beat: 1.5, midi: 69, dur: 1.1, vel: 0.96, scoop: true },
-          { beat: 2.75, midi: 72, dur: 1.15, vel: 0.98, scoop: true },
+          { beat: 0.25, midi: 57, dur: 1.35, vel: 0.82, scoop: true },
+          { beat: 1.75, midi: 60, dur: 1.65, vel: 0.94, scoop: true },
+          // Breath space
         ],
       },
       {
@@ -110,9 +129,9 @@ export const JAZZ_TRACKS = [
           { beat: 2.5, midi: 45, dur: 1.4 },
         ],
         melody: [
-          { beat: 0.0, midi: 69, dur: 1.6, vel: 0.95, scoop: true },
-          { beat: 2.0, midi: 67, dur: 0.85, vel: 0.88 },
-          { beat: 3.0, midi: 65, dur: 0.95, vel: 0.9 },
+          { beat: 0.0, midi: 64, dur: 1.45, vel: 0.96, scoop: true },
+          { beat: 1.75, midi: 62, dur: 0.75, vel: 0.84 },
+          { beat: 2.6, midi: 60, dur: 1.05, vel: 0.86 },
         ],
       },
       {
@@ -123,9 +142,8 @@ export const JAZZ_TRACKS = [
           { beat: 2.5, midi: 41, dur: 1.4 },
         ],
         melody: [
-          { beat: 0.0, midi: 62, dur: 1.15, vel: 0.92, scoop: true },
-          { beat: 1.25, midi: 65, dur: 1.1, vel: 0.95, scoop: true },
-          { beat: 2.5, midi: 69, dur: 1.4, vel: 0.98, scoop: true },
+          { beat: 0.25, midi: 58, dur: 1.15, vel: 0.86, scoop: true },
+          { beat: 1.5, midi: 62, dur: 1.75, vel: 0.98, scoop: true },
         ],
       },
       {
@@ -136,9 +154,9 @@ export const JAZZ_TRACKS = [
           { beat: 2.5, midi: 43, dur: 1.4 },
         ],
         melody: [
-          { beat: 0.0, midi: 67, dur: 1.5, vel: 0.94, scoop: true },
-          { beat: 1.75, midi: 65, dur: 0.9, vel: 0.88 },
-          { beat: 2.75, midi: 64, dur: 1.15, vel: 0.9, scoop: true },
+          { beat: 0.0, midi: 60, dur: 1.3, vel: 0.9, scoop: true },
+          { beat: 1.5, midi: 58, dur: 0.85, vel: 0.82 },
+          { beat: 2.5, midi: 57, dur: 1.1, vel: 0.8 },
         ],
       },
     ],
@@ -151,7 +169,7 @@ export const JAZZ_TRACKS = [
     style: 'ibiza',
     bars: [
       {
-        // Dm9 uplifting sunny beach-club hook
+        // Dm9 — catchy uplifting Ibiza beach-club tenor hook with breathing room
         pad: [53, 57, 60, 64],
         bass: [
           { beat: 0.0, midi: 38, dur: 0.45 },
@@ -161,13 +179,11 @@ export const JAZZ_TRACKS = [
           { beat: 3.25, midi: 48, dur: 0.45 },
         ],
         melody: [
-          { beat: 0.0, midi: 69, dur: 0.45, vel: 0.92, scoop: true },
-          { beat: 0.5, midi: 72, dur: 0.4, vel: 0.94 },
-          { beat: 1.0, midi: 74, dur: 0.65, vel: 0.98, scoop: true },
-          { beat: 1.75, midi: 72, dur: 0.35, vel: 0.86 },
-          { beat: 2.25, midi: 69, dur: 0.45, vel: 0.9 },
-          { beat: 2.75, midi: 67, dur: 0.55, vel: 0.9 },
-          { beat: 3.5, midi: 69, dur: 0.45, vel: 0.94, scoop: true },
+          { beat: 0.0, midi: 62, dur: 0.45, vel: 0.9, scoop: true },
+          { beat: 0.5, midi: 65, dur: 0.4, vel: 0.92 },
+          { beat: 1.0, midi: 69, dur: 0.85, vel: 0.98, scoop: true },
+          { beat: 2.25, midi: 67, dur: 0.45, vel: 0.86 },
+          { beat: 2.75, midi: 65, dur: 0.75, vel: 0.9 },
         ],
       },
       {
@@ -181,12 +197,10 @@ export const JAZZ_TRACKS = [
           { beat: 3.25, midi: 47, dur: 0.45 },
         ],
         melody: [
-          { beat: 0.0, midi: 67, dur: 0.45, vel: 0.9, scoop: true },
-          { beat: 0.5, midi: 71, dur: 0.4, vel: 0.92 },
-          { beat: 1.0, midi: 74, dur: 0.65, vel: 0.98, scoop: true },
-          { beat: 1.75, midi: 76, dur: 0.65, vel: 1.0, scoop: true },
-          { beat: 2.5, midi: 74, dur: 0.45, vel: 0.88 },
-          { beat: 3.0, midi: 71, dur: 0.8, vel: 0.92 },
+          { beat: 0.0, midi: 64, dur: 0.45, vel: 0.88, scoop: true },
+          { beat: 0.5, midi: 67, dur: 0.4, vel: 0.92 },
+          { beat: 1.0, midi: 71, dur: 0.9, vel: 1.0, scoop: true },
+          { beat: 2.25, midi: 69, dur: 0.95, vel: 0.92 },
         ],
       },
       {
@@ -200,12 +214,10 @@ export const JAZZ_TRACKS = [
           { beat: 3.25, midi: 47, dur: 0.45 },
         ],
         melody: [
-          { beat: 0.0, midi: 72, dur: 0.45, vel: 0.94, scoop: true },
-          { beat: 0.5, midi: 76, dur: 0.6, vel: 0.98, scoop: true },
-          { beat: 1.25, midi: 74, dur: 0.4, vel: 0.88 },
-          { beat: 1.75, midi: 72, dur: 0.55, vel: 0.92 },
-          { beat: 2.5, midi: 69, dur: 0.45, vel: 0.88 },
-          { beat: 3.0, midi: 67, dur: 0.8, vel: 0.9 },
+          { beat: 0.0, midi: 67, dur: 0.5, vel: 0.92, scoop: true },
+          { beat: 0.75, midi: 72, dur: 0.9, vel: 1.0, scoop: true },
+          { beat: 2.0, midi: 71, dur: 0.5, vel: 0.88 },
+          { beat: 2.75, midi: 67, dur: 0.8, vel: 0.9 },
         ],
       },
       {
@@ -219,11 +231,9 @@ export const JAZZ_TRACKS = [
           { beat: 3.25, midi: 40, dur: 0.45 },
         ],
         melody: [
-          { beat: 0.0, midi: 69, dur: 0.6, vel: 0.94, scoop: true },
-          { beat: 0.75, midi: 72, dur: 0.55, vel: 0.96, scoop: true },
-          { beat: 1.5, midi: 69, dur: 0.45, vel: 0.9 },
-          { beat: 2.25, midi: 67, dur: 0.55, vel: 0.88 },
-          { beat: 3.0, midi: 64, dur: 0.85, vel: 0.92 },
+          { beat: 0.0, midi: 64, dur: 0.85, vel: 0.94, scoop: true },
+          { beat: 1.25, midi: 67, dur: 0.65, vel: 0.9 },
+          { beat: 2.25, midi: 64, dur: 1.1, vel: 0.88, scoop: true },
         ],
       },
     ],
@@ -236,7 +246,7 @@ export const JAZZ_TRACKS = [
     style: 'funk',
     bars: [
       {
-        // Dm7 funky riff
+        // Dm7 funky tenor riff
         chords: [
           { beat: 0.5, notes: [53, 57, 60, 64], dur: 0.35 },
           { beat: 1.75, notes: [53, 57, 60, 64], dur: 0.45 },
@@ -251,16 +261,15 @@ export const JAZZ_TRACKS = [
           { beat: 3.5, midi: 48, dur: 0.38 },
         ],
         melody: [
-          { beat: 0.0, midi: 62, dur: 0.45, vel: 0.92, scoop: true },
-          { beat: 0.5, midi: 65, dur: 0.35, vel: 0.88 },
-          { beat: 1.0, midi: 67, dur: 0.45, vel: 0.95, scoop: true },
-          { beat: 1.75, midi: 69, dur: 0.7, vel: 1.0, scoop: true },
-          { beat: 2.75, midi: 67, dur: 0.35, vel: 0.86 },
-          { beat: 3.25, midi: 65, dur: 0.6, vel: 0.92 },
+          { beat: 0.0, midi: 57, dur: 0.45, vel: 0.9, scoop: true },
+          { beat: 0.5, midi: 60, dur: 0.35, vel: 0.86 },
+          { beat: 1.0, midi: 62, dur: 0.5, vel: 0.94, scoop: true },
+          { beat: 1.75, midi: 65, dur: 0.85, vel: 1.0, scoop: true },
+          { beat: 3.0, midi: 62, dur: 0.55, vel: 0.86 },
         ],
       },
       {
-        // G9 funky answer
+        // G9 funky answer with breathing space
         chords: [
           { beat: 0.5, notes: [53, 57, 59, 64], dur: 0.35 },
           { beat: 2.0, notes: [53, 57, 59, 64], dur: 0.45 },
@@ -276,10 +285,9 @@ export const JAZZ_TRACKS = [
         ],
         melody: [
           { beat: 0.0, midi: 64, dur: 0.65, vel: 0.92, scoop: true },
-          { beat: 1.0, midi: 62, dur: 0.4, vel: 0.86 },
-          { beat: 1.5, midi: 60, dur: 0.4, vel: 0.88 },
-          { beat: 2.25, midi: 62, dur: 0.55, vel: 0.94, scoop: true },
-          { beat: 3.0, midi: 67, dur: 0.8, vel: 0.98, scoop: true },
+          { beat: 1.0, midi: 62, dur: 0.4, vel: 0.84 },
+          { beat: 1.5, midi: 60, dur: 0.45, vel: 0.86 },
+          { beat: 2.25, midi: 62, dur: 0.95, vel: 0.96, scoop: true },
         ],
       },
     ],
@@ -292,7 +300,7 @@ export const JAZZ_TRACKS = [
     style: 'swing',
     bars: [
       {
-        // Fmaj7 walking bass
+        // Fmaj7 walking bass + soulful tenor solo
         chords: [
           { beat: 0.0, notes: [53, 57, 60, 64], dur: 0.6 },
           { beat: 2.66, notes: [53, 57, 60, 64], dur: 0.5 },
@@ -304,12 +312,10 @@ export const JAZZ_TRACKS = [
           { beat: 3, midi: 50, dur: 0.85 },
         ],
         melody: [
-          { beat: 0.0, midi: 65, dur: 0.65, vel: 0.92, scoop: true },
-          { beat: 0.66, midi: 69, dur: 0.4, vel: 0.86 },
-          { beat: 1.0, midi: 72, dur: 0.65, vel: 0.96 },
-          { beat: 1.66, midi: 70, dur: 0.4, vel: 0.84 },
-          { beat: 2.0, midi: 69, dur: 0.9, vel: 0.94, scoop: true },
-          { beat: 3.0, midi: 67, dur: 0.7, vel: 0.88 },
+          { beat: 0.0, midi: 60, dur: 0.65, vel: 0.9, scoop: true },
+          { beat: 0.66, midi: 64, dur: 0.4, vel: 0.84 },
+          { beat: 1.0, midi: 65, dur: 0.7, vel: 0.94, scoop: true },
+          { beat: 2.0, midi: 69, dur: 1.1, vel: 0.98, scoop: true },
         ],
       },
       {
@@ -325,12 +331,10 @@ export const JAZZ_TRACKS = [
           { beat: 3, midi: 45, dur: 0.85 },
         ],
         melody: [
-          { beat: 0.0, midi: 66, dur: 0.65, vel: 0.92, scoop: true },
-          { beat: 0.66, midi: 69, dur: 0.4, vel: 0.88 },
-          { beat: 1.0, midi: 67, dur: 0.65, vel: 0.92 },
-          { beat: 1.66, midi: 65, dur: 0.4, vel: 0.86 },
-          { beat: 2.0, midi: 62, dur: 0.95, vel: 0.94, scoop: true },
-          { beat: 3.33, midi: 65, dur: 0.55, vel: 0.9 },
+          { beat: 0.33, midi: 66, dur: 0.65, vel: 0.92, scoop: true },
+          { beat: 1.0, midi: 69, dur: 0.55, vel: 0.88 },
+          { beat: 1.66, midi: 67, dur: 0.45, vel: 0.84 },
+          { beat: 2.33, midi: 62, dur: 1.1, vel: 0.94, scoop: true },
         ],
       },
       {
@@ -346,12 +350,10 @@ export const JAZZ_TRACKS = [
           { beat: 3, midi: 49, dur: 0.85 },
         ],
         melody: [
-          { beat: 0.0, midi: 67, dur: 0.7, vel: 0.94, scoop: true },
-          { beat: 0.66, midi: 70, dur: 0.4, vel: 0.88 },
-          { beat: 1.0, midi: 69, dur: 0.65, vel: 0.92 },
-          { beat: 1.66, midi: 67, dur: 0.4, vel: 0.84 },
-          { beat: 2.0, midi: 65, dur: 0.85, vel: 0.94 },
-          { beat: 3.0, midi: 62, dur: 0.75, vel: 0.86 },
+          { beat: 0.0, midi: 62, dur: 0.65, vel: 0.9, scoop: true },
+          { beat: 0.66, midi: 65, dur: 0.45, vel: 0.86 },
+          { beat: 1.33, midi: 67, dur: 0.95, vel: 0.96, scoop: true },
+          { beat: 2.66, midi: 65, dur: 0.75, vel: 0.86 },
         ],
       },
       {
@@ -367,12 +369,9 @@ export const JAZZ_TRACKS = [
           { beat: 3, midi: 43, dur: 0.85 },
         ],
         melody: [
-          { beat: 0.0, midi: 64, dur: 0.65, vel: 0.92, scoop: true },
-          { beat: 0.66, midi: 67, dur: 0.4, vel: 0.88 },
-          { beat: 1.0, midi: 70, dur: 0.65, vel: 0.96 },
-          { beat: 1.66, midi: 69, dur: 0.4, vel: 0.88 },
-          { beat: 2.0, midi: 67, dur: 0.75, vel: 0.92 },
-          { beat: 3.0, midi: 64, dur: 0.8, vel: 0.9 },
+          { beat: 0.0, midi: 64, dur: 0.7, vel: 0.92, scoop: true },
+          { beat: 1.0, midi: 67, dur: 0.65, vel: 0.94 },
+          { beat: 2.0, midi: 64, dur: 1.1, vel: 0.9, scoop: true },
         ],
       },
     ],
@@ -387,6 +386,13 @@ class JazzAudioEngine {
     this.reverbIn = null;
     this.pingPongIn = null;
     this.noiseBuffer = null;
+
+    // Sampled Tenor Saxophone state
+    this.sampleBuffers = new Map(); // midi -> AudioBuffer
+    this.sampleStatus = 'idle'; // 'idle' | 'loading' | 'ready' | 'fallback'
+    this.statusListeners = new Set();
+    this.loadPromise = null;
+
     this.isPlaying = false;
     this.trackIndex = 0;
     this.volume = 0.25;
@@ -395,7 +401,18 @@ class JazzAudioEngine {
     this.schedulerId = null;
   }
 
-  _createReverbImpulse(ctx, seconds = 2.1, decay = 2.6) {
+  onStatusChange(cb) {
+    this.statusListeners.add(cb);
+    cb(this.sampleStatus);
+    return () => this.statusListeners.delete(cb);
+  }
+
+  _setSampleStatus(status) {
+    this.sampleStatus = status;
+    this.statusListeners.forEach((cb) => cb(status));
+  }
+
+  _createReverbImpulse(ctx, seconds = 2.3, decay = 2.5) {
     const rate = ctx.sampleRate;
     const length = Math.floor(rate * seconds);
     const impulse = ctx.createBuffer(2, length, rate);
@@ -417,37 +434,42 @@ class JazzAudioEngine {
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.value = this.volume;
 
-      // Dedicated front-and-center Saxophone Presence Bus (+4.5dB warm brass mid boost)
+      // Dedicated Warm Tenor Saxophone Bus (gentle low-pass warmth + mid presence)
       this.saxBus = this.ctx.createGain();
-      this.saxBus.gain.value = 1.25;
+      this.saxBus.gain.value = 1.35;
+
+      const saxWarmLP = this.ctx.createBiquadFilter();
+      saxWarmLP.type = 'lowpass';
+      saxWarmLP.frequency.value = 5200;
 
       const saxPresenceEQ = this.ctx.createBiquadFilter();
       saxPresenceEQ.type = 'peaking';
-      saxPresenceEQ.frequency.value = 1150;
-      saxPresenceEQ.Q.value = 1.1;
-      saxPresenceEQ.gain.value = 4.5;
+      saxPresenceEQ.frequency.value = 1100;
+      saxPresenceEQ.Q.value = 1.0;
+      saxPresenceEQ.gain.value = 3.2;
 
-      this.saxBus.connect(saxPresenceEQ);
+      this.saxBus.connect(saxWarmLP);
+      saxWarmLP.connect(saxPresenceEQ);
       saxPresenceEQ.connect(this.masterGain);
 
-      // Lush Algorithmic Stereo Hall Reverb (sunset / beach lounge space)
+      // Lush Stereo Hall Reverb
       this.reverbIn = this.ctx.createGain();
-      this.reverbIn.gain.value = 0.38;
+      this.reverbIn.gain.value = 0.42;
 
       const convolver = this.ctx.createConvolver();
-      convolver.buffer = this._createReverbImpulse(this.ctx, 2.2, 2.5);
+      convolver.buffer = this._createReverbImpulse(this.ctx, 2.3, 2.4);
 
       const reverbLP = this.ctx.createBiquadFilter();
       reverbLP.type = 'lowpass';
-      reverbLP.frequency.value = 2600;
+      reverbLP.frequency.value = 2800;
 
       this.reverbIn.connect(convolver);
       convolver.connect(reverbLP);
       reverbLP.connect(this.masterGain);
 
-      // Stereo Ping-Pong Delay Bus
+      // Subtle Stereo Ping-Pong Delay
       this.pingPongIn = this.ctx.createGain();
-      this.pingPongIn.gain.value = 0.24;
+      this.pingPongIn.gain.value = 0.22;
 
       const delayL = this.ctx.createDelay(1.0);
       const delayR = this.ctx.createDelay(1.0);
@@ -456,13 +478,13 @@ class JazzAudioEngine {
 
       const fbFilter = this.ctx.createBiquadFilter();
       fbFilter.type = 'lowpass';
-      fbFilter.frequency.value = 2000;
+      fbFilter.frequency.value = 2100;
 
       const fbGain = this.ctx.createGain();
-      fbGain.gain.value = 0.3;
+      fbGain.gain.value = 0.28;
 
       const wetGain = this.ctx.createGain();
-      wetGain.gain.value = 0.65;
+      wetGain.gain.value = 0.6;
 
       if (typeof this.ctx.createStereoPanner === 'function') {
         const panL = this.ctx.createStereoPanner();
@@ -491,13 +513,12 @@ class JazzAudioEngine {
 
       wetGain.connect(this.masterGain);
 
-      // Route Sax Bus into lush reverb & subtle ping-pong echo
       saxPresenceEQ.connect(this.reverbIn);
       saxPresenceEQ.connect(this.pingPongIn);
 
       this.masterGain.connect(this.ctx.destination);
 
-      // Noise buffer for breath attack, soft shakers, hi-hats, claps
+      // Noise buffer for drums & fallback breath
       const bufSize = Math.floor(this.ctx.sampleRate * 0.5);
       this.noiseBuffer = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
       const data = this.noiseBuffer.getChannelData(0);
@@ -509,6 +530,65 @@ class JazzAudioEngine {
     if (this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
+  }
+
+  /**
+   * Fetch and decode real FluidR3_GM Tenor Saxophone MP3 samples from CDN.
+   * Gracefully falls back to offline synth if network is unavailable.
+   */
+  async _loadTenorSamples() {
+    if (this.sampleBuffers.size > 0) {
+      this._setSampleStatus('ready');
+      return;
+    }
+    if (this.loadPromise) return this.loadPromise;
+
+    this._setSampleStatus('loading');
+
+    this.loadPromise = (async () => {
+      const fetchOne = async (anchor) => {
+        for (const base of SOUNDFONT_CDNS) {
+          try {
+            const resp = await fetch(`${base}/${anchor.file}.mp3`, { mode: 'cors' });
+            if (!resp.ok) continue;
+            const arrayBuf = await resp.arrayBuffer();
+            const audioBuf = await this.ctx.decodeAudioData(arrayBuf.slice(0));
+            this.sampleBuffers.set(anchor.midi, audioBuf);
+            return true;
+          } catch {
+            // Try next CDN
+          }
+        }
+        return false;
+      };
+
+      await Promise.all(TENOR_SAMPLE_ANCHORS.map(fetchOne));
+
+      if (this.sampleBuffers.size >= 4) {
+        this._setSampleStatus('ready');
+      } else {
+        this._setSampleStatus('fallback');
+      }
+    })();
+
+    return this.loadPromise;
+  }
+
+  _findNearestSample(targetMidi) {
+    let bestMidi = null;
+    let bestDist = Infinity;
+    for (const midi of this.sampleBuffers.keys()) {
+      const dist = Math.abs(midi - targetMidi);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestMidi = midi;
+      }
+    }
+    if (bestMidi === null) return null;
+    return {
+      buffer: this.sampleBuffers.get(bestMidi),
+      semitoneOffset: targetMidi - bestMidi,
+    };
   }
 
   setVolume(val) {
@@ -527,8 +607,15 @@ class JazzAudioEngine {
     }
   }
 
-  start() {
+  async start() {
     this._ensureContext();
+    if (this.isPlaying) return;
+
+    // Kick off real Tenor Saxophone sample loading immediately (non-blocking if cached)
+    if (this.sampleBuffers.size === 0) {
+      await this._loadTenorSamples();
+    }
+
     if (this.isPlaying) return;
     this.isPlaying = true;
     const now = this.ctx.currentTime;
@@ -569,10 +656,10 @@ class JazzAudioEngine {
   _scheduleBar(bar, style, barStart, beatDur) {
     const isPadStyle = style === 'sunset' || style === 'lounge' || style === 'ibiza';
 
-    // 1. Subtle, supportive rhythm section
+    // 1. Supportive rhythm section
     this._scheduleDrums(style, barStart, beatDur);
 
-    // 2. Dreamy Rhodes / Sidechained Sunset Pad
+    // 2. Warm Rhodes / Sidechained Sunset Pad
     if (isPadStyle && bar.pad) {
       this._playWarmPad(bar.pad, barStart, beatDur, style);
     } else if (bar.chords) {
@@ -581,63 +668,184 @@ class JazzAudioEngine {
       });
     }
 
-    // 3. Warm supportive bassline
+    // 3. Supportive bassline
     bar.bass.forEach((b) => {
       this._playBassNote(b.midi, barStart + b.beat * beatDur, b.dur * beatDur, style);
     });
 
-    // 4. Front-and-center Expressive Saxophone Solo
+    // 4. Real Sampled Tenor Saxophone Lead (or seamless offline fallback)
     bar.melody.forEach((n) => {
-      const jitter = (Math.random() - 0.5) * 0.006;
-      this._playSaxSolo(
-        n.midi,
-        Math.max(this.ctx.currentTime, barStart + n.beat * beatDur + jitter),
-        n.dur * beatDur,
-        n.vel || 0.92,
-        Boolean(n.scoop),
-        style
-      );
+      const jitter = (Math.random() - 0.5) * 0.008;
+      const startTime = Math.max(this.ctx.currentTime, barStart + n.beat * beatDur + jitter);
+      const duration = n.dur * beatDur;
+      const velocity = n.vel || 0.9;
+      const scoop = Boolean(n.scoop);
+
+      if (this.sampleBuffers.size > 0) {
+        this._playSampledTenorSax(n.midi, startTime, duration, velocity, scoop, style);
+      } else {
+        this._playFallbackSynthSax(n.midi, startTime, duration, velocity, scoop, style);
+      }
     });
+  }
+
+  /**
+   * Plays a real studio-sampled FluidR3_GM Tenor Saxophone note with:
+   * - Upward pitch-bend scoop (-120 -> 0 cents over 65-90ms)
+   * - Delayed human vibrato (~5.2 Hz starting 350ms after onset)
+   * - Natural breath attack & dynamic swell on long notes
+   */
+  _playSampledTenorSax(midi, startTime, duration, velocity, scoop, style) {
+    const nearest = this._findNearestSample(midi);
+    if (!nearest) return;
+
+    const ctx = this.ctx;
+    const isRomantic = style === 'sunset' || style === 'lounge';
+
+    const src = ctx.createBufferSource();
+    src.buffer = nearest.buffer;
+
+    // Base detune in cents to match exact pitch
+    const baseDetune = nearest.semitoneOffset * 100;
+
+    // Expressive upward scoop (-120 -> 0 cents) on emotional/accented notes
+    if (scoop) {
+      const scoopCents = isRomantic ? -120 : -95;
+      const glideTime = isRomantic ? 0.088 : 0.062;
+      src.detune.setValueAtTime(baseDetune + scoopCents, startTime);
+      src.detune.linearRampToValueAtTime(baseDetune, startTime + glideTime);
+    } else {
+      src.detune.setValueAtTime(baseDetune, startTime);
+    }
+
+    // Gentle delayed vibrato (~5.2 Hz) kicking in 350ms after note onset
+    let lfo = null;
+    if (duration > 0.42) {
+      lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.type = 'sine';
+      lfo.frequency.value = 5.2;
+
+      const vibDelay = 0.35;
+      lfoGain.gain.setValueAtTime(0, startTime);
+      lfoGain.gain.setValueAtTime(0, startTime + vibDelay);
+      lfoGain.gain.linearRampToValueAtTime(
+        isRomantic ? 22 : 16,
+        startTime + Math.min(duration, vibDelay + 0.32)
+      );
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(src.detune);
+      lfo.start(startTime);
+      lfo.stop(startTime + duration + 0.2);
+    }
+
+    // Dynamic breath & swell envelope
+    const gain = ctx.createGain();
+    const peak = 0.68 * velocity;
+    const attack = isRomantic ? 0.055 : 0.025;
+    const release = isRomantic ? 0.18 : 0.11;
+
+    gain.gain.setValueAtTime(0.0001, startTime);
+    gain.gain.linearRampToValueAtTime(peak * 0.88, startTime + attack);
+    // Expressive swell on sustained notes
+    if (duration > 0.5) {
+      gain.gain.linearRampToValueAtTime(peak, startTime + duration * 0.55);
+    }
+    gain.gain.setValueAtTime(peak * 0.9, startTime + Math.max(attack + 0.02, duration - 0.06));
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration + release);
+
+    src.connect(gain);
+    gain.connect(this.saxBus);
+
+    src.start(startTime);
+    src.stop(startTime + duration + release + 0.05);
+  }
+
+  /**
+   * Seamless offline fallback synth if the user has no internet connection and samples aren't cached.
+   */
+  _playFallbackSynthSax(midi, startTime, duration, velocity, scoop, style) {
+    const ctx = this.ctx;
+    const freq = midiToFreq(midi);
+    const isRomantic = style === 'sunset' || style === 'lounge';
+
+    const oscReed = ctx.createOscillator();
+    const oscBody = ctx.createOscillator();
+    oscReed.type = 'sawtooth';
+    oscBody.type = 'triangle';
+
+    const scoopRatio = scoop ? 0.935 : 0.994;
+    const glideTime = scoop ? 0.08 : 0.02;
+
+    oscReed.frequency.setValueAtTime(freq * scoopRatio, startTime);
+    oscReed.frequency.exponentialRampToValueAtTime(freq, startTime + glideTime);
+    oscBody.frequency.setValueAtTime(freq * scoopRatio * 1.002, startTime);
+    oscBody.frequency.exponentialRampToValueAtTime(freq * 1.001, startTime + glideTime);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.Q.value = 2.2;
+    filter.frequency.setValueAtTime(520, startTime);
+    filter.frequency.exponentialRampToValueAtTime(isRomantic ? 2100 : 2400, startTime + 0.11);
+    filter.frequency.exponentialRampToValueAtTime(980, startTime + Math.max(0.16, duration));
+
+    const gain = ctx.createGain();
+    const peak = 0.28 * velocity;
+    gain.gain.setValueAtTime(0.0001, startTime);
+    gain.gain.linearRampToValueAtTime(peak, startTime + 0.05);
+    gain.gain.setValueAtTime(peak * 0.85, startTime + Math.max(0.07, duration - 0.08));
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration + 0.1);
+
+    const bodyMix = ctx.createGain();
+    bodyMix.gain.value = 0.78;
+
+    oscReed.connect(filter);
+    oscBody.connect(bodyMix);
+    bodyMix.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.saxBus);
+
+    oscReed.start(startTime);
+    oscBody.start(startTime);
+    oscReed.stop(startTime + duration + 0.14);
+    oscBody.stop(startTime + duration + 0.14);
   }
 
   _scheduleDrums(style, barStart, beatDur) {
     if (style === 'sunset') {
-      // Soft heartbeat chill-house kick + breezy shaker
       for (let b = 0; b < 4; b++) {
-        this._playHouseKick(barStart + b * beatDur, 0.17, 130);
-        this._playCymbal(barStart + (b + 0.5) * beatDur, 0.045, 0.075, 7600);
+        this._playHouseKick(barStart + b * beatDur, 0.16, 130);
+        this._playCymbal(barStart + (b + 0.5) * beatDur, 0.04, 0.075, 7600);
       }
-      this._playHouseClap(barStart + 1 * beatDur, 0.065);
-      this._playHouseClap(barStart + 3 * beatDur, 0.065);
+      this._playHouseClap(barStart + 1 * beatDur, 0.06);
+      this._playHouseClap(barStart + 3 * beatDur, 0.06);
     } else if (style === 'lounge') {
-      // Intimate unhurried lounge pulse: gentle kick on 1 & 2.5 + soft ocean shaker
-      this._playHouseKick(barStart, 0.13, 110);
-      this._playHouseKick(barStart + 2.5 * beatDur, 0.1, 105);
+      this._playHouseKick(barStart, 0.12, 110);
+      this._playHouseKick(barStart + 2.5 * beatDur, 0.095, 105);
       for (let i = 0; i < 8; i++) {
-        this._playCymbal(barStart + i * 0.5 * beatDur, i % 2 === 0 ? 0.032 : 0.018, 0.055, 7200);
+        this._playCymbal(barStart + i * 0.5 * beatDur, i % 2 === 0 ? 0.028 : 0.015, 0.055, 7200);
       }
     } else if (style === 'ibiza') {
-      // Uplifting Ibiza beach-club 4-on-the-floor beat (kept cleanly under the sax)
       for (let b = 0; b < 4; b++) {
-        this._playHouseKick(barStart + b * beatDur, 0.22, 155);
-        this._playCymbal(barStart + (b + 0.5) * beatDur, 0.065, 0.095, 7800);
+        this._playHouseKick(barStart + b * beatDur, 0.21, 155);
+        this._playCymbal(barStart + (b + 0.5) * beatDur, 0.06, 0.095, 7800);
       }
-      this._playHouseClap(barStart + 1 * beatDur, 0.1);
-      this._playHouseClap(barStart + 3 * beatDur, 0.1);
+      this._playHouseClap(barStart + 1 * beatDur, 0.095);
+      this._playHouseClap(barStart + 3 * beatDur, 0.095);
     } else if (style === 'funk') {
       for (let i = 0; i < 16; i++) {
-        const accent = i % 4 === 0 ? 0.055 : i % 2 === 0 ? 0.032 : 0.016;
+        const accent = i % 4 === 0 ? 0.05 : i % 2 === 0 ? 0.028 : 0.014;
         this._playCymbal(barStart + i * 0.25 * beatDur, accent, 0.032, 8600);
       }
-      [0, 0.75, 2.25].forEach((b) => this._playHouseKick(barStart + b * beatDur, 0.2, 145));
-      [1, 3].forEach((b) => this._playHouseClap(barStart + b * beatDur, 0.095));
+      [0, 0.75, 2.25].forEach((b) => this._playHouseKick(barStart + b * beatDur, 0.19, 145));
+      [1, 3].forEach((b) => this._playHouseClap(barStart + b * beatDur, 0.09));
     } else {
-      // Upbeat Jazz Swing Ride
       [0, 1, 1.66, 2, 3, 3.66].forEach((b) => {
-        const accent = b === 1 || b === 3 ? 0.075 : 0.048;
+        const accent = b === 1 || b === 3 ? 0.07 : 0.045;
         this._playCymbal(barStart + b * beatDur, accent, 0.085, 7500);
       });
-      this._playHouseKick(barStart, 0.11, 115);
+      this._playHouseKick(barStart, 0.1, 115);
     }
   }
 
@@ -645,16 +853,14 @@ class JazzAudioEngine {
     const ctx = this.ctx;
     const barDur = beatDur * 4;
     const padGain = ctx.createGain();
-    const baseLevel = style === 'lounge' ? 0.05 : 0.055;
+    const baseLevel = style === 'lounge' ? 0.048 : 0.052;
 
     if (style === 'lounge') {
-      // Smooth, dreamy unhurried swell
       padGain.gain.setValueAtTime(0.0001, barStart);
       padGain.gain.linearRampToValueAtTime(baseLevel, barStart + 0.35);
       padGain.gain.setValueAtTime(baseLevel * 0.85, barStart + barDur - 0.3);
       padGain.gain.linearRampToValueAtTime(0.0001, barStart + barDur + 0.15);
     } else {
-      // Gentle sidechain breathing synced to kick
       padGain.gain.setValueAtTime(baseLevel * 0.28, barStart);
       for (let b = 0; b < 4; b++) {
         const t = barStart + b * beatDur;
@@ -667,7 +873,7 @@ class JazzAudioEngine {
 
     const lp = ctx.createBiquadFilter();
     lp.type = 'lowpass';
-    lp.frequency.value = style === 'ibiza' ? 1250 : 1050;
+    lp.frequency.value = style === 'ibiza' ? 1200 : 1020;
 
     padGain.connect(lp);
     lp.connect(this.masterGain);
@@ -683,101 +889,10 @@ class JazzAudioEngine {
     });
   }
 
-  _playSaxSolo(midi, startTime, duration, velocity, scoop, style) {
-    const ctx = this.ctx;
-    const freq = midiToFreq(midi);
-    const isRomantic = style === 'sunset' || style === 'lounge';
-
-    // Dual warm oscillators: rich reed sawtooth + velvety triangle body
-    const oscReed = ctx.createOscillator();
-    const oscBody = ctx.createOscillator();
-    oscReed.type = 'sawtooth';
-    oscBody.type = 'triangle';
-
-    // Smooth, lyrical pitch-bend scoop into notes
-    const scoopRatio = scoop ? (isRomantic ? 0.938 : 0.945) : 0.994;
-    const glideTime = scoop ? (isRomantic ? 0.088 : 0.055) : 0.02;
-
-    oscReed.frequency.setValueAtTime(freq * scoopRatio, startTime);
-    oscReed.frequency.exponentialRampToValueAtTime(freq, startTime + glideTime);
-    oscBody.frequency.setValueAtTime(freq * scoopRatio * 1.0018, startTime);
-    oscBody.frequency.exponentialRampToValueAtTime(freq * 1.0012, startTime + glideTime);
-
-    // Human vibrato that stays straight at attack and swells gently on sustained notes
-    const lfo = ctx.createOscillator();
-    const lfoGain = ctx.createGain();
-    lfo.frequency.value = isRomantic ? 5.1 : 5.5;
-    lfoGain.gain.setValueAtTime(0.001, startTime);
-    lfoGain.gain.setValueAtTime(0.001, startTime + Math.min(0.14, duration * 0.25));
-    lfoGain.gain.linearRampToValueAtTime(
-      duration > 0.35 ? freq * (isRomantic ? 0.0095 : 0.0075) : freq * 0.002,
-      startTime + Math.min(0.45, duration * 0.65)
-    );
-    lfo.connect(lfoGain);
-    lfoGain.connect(oscReed.frequency);
-    lfoGain.connect(oscBody.frequency);
-
-    // Warm breathy brass lowpass filter envelope
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.Q.value = isRomantic ? 2.1 : 2.6;
-    const peakCutoff = isRomantic ? 2250 : 2550;
-    filter.frequency.setValueAtTime(520, startTime);
-    filter.frequency.exponentialRampToValueAtTime(peakCutoff, startTime + (isRomantic ? 0.13 : 0.07));
-    filter.frequency.exponentialRampToValueAtTime(1020, startTime + Math.max(0.16, duration));
-
-    // Prominent, singing breath envelope (front-and-center in the mix!)
-    const gain = ctx.createGain();
-    const peak = 0.31 * velocity;
-    const attack = isRomantic ? 0.068 : 0.032;
-    gain.gain.setValueAtTime(0.0001, startTime);
-    gain.gain.linearRampToValueAtTime(peak, startTime + attack);
-    gain.gain.setValueAtTime(peak * 0.88, startTime + Math.max(attack + 0.02, duration - 0.09));
-    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration + 0.09);
-
-    const bodyMix = ctx.createGain();
-    bodyMix.gain.value = 0.78;
-
-    oscReed.connect(filter);
-    oscBody.connect(bodyMix);
-    bodyMix.connect(filter);
-    filter.connect(gain);
-
-    // Send directly to our warm Saxophone Presence Bus (which feeds master + lush reverb + echo)
-    gain.connect(this.saxBus);
-
-    // Soft breathy reed air transient at note onset
-    if (this.noiseBuffer) {
-      const breathSrc = ctx.createBufferSource();
-      breathSrc.buffer = this.noiseBuffer;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 2300;
-      bp.Q.value = 1.4;
-      const bGain = ctx.createGain();
-      bGain.gain.setValueAtTime(0.028 * velocity, startTime);
-      bGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.065);
-      breathSrc.connect(bp);
-      bp.connect(bGain);
-      bGain.connect(this.saxBus);
-      breathSrc.start(startTime);
-      breathSrc.stop(startTime + 0.075);
-    }
-
-    oscReed.start(startTime);
-    oscBody.start(startTime);
-    lfo.start(startTime);
-
-    const stopAt = startTime + duration + 0.14;
-    oscReed.stop(stopAt);
-    oscBody.stop(stopAt);
-    lfo.stop(stopAt);
-  }
-
   _playRhodesChord(midiNotes, startTime, duration) {
     const ctx = this.ctx;
     const chordGain = ctx.createGain();
-    const level = 0.055;
+    const level = 0.052;
     chordGain.gain.setValueAtTime(0.0001, startTime);
     chordGain.gain.linearRampToValueAtTime(level, startTime + 0.018);
     chordGain.gain.exponentialRampToValueAtTime(level * 0.35, startTime + duration * 0.65);
@@ -811,11 +926,11 @@ class JazzAudioEngine {
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.Q.value = style === 'funk' ? 3.0 : 1.1;
-    filter.frequency.setValueAtTime(isSynthBass ? 480 : 320, startTime);
-    filter.frequency.exponentialRampToValueAtTime(160, startTime + duration);
+    filter.frequency.setValueAtTime(isSynthBass ? 460 : 300, startTime);
+    filter.frequency.exponentialRampToValueAtTime(155, startTime + duration);
 
     const gain = ctx.createGain();
-    const peak = style === 'lounge' ? 0.17 : 0.19;
+    const peak = style === 'lounge' ? 0.16 : 0.18;
     gain.gain.setValueAtTime(0.0001, startTime);
     gain.gain.linearRampToValueAtTime(peak, startTime + 0.018);
     gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration + 0.04);
