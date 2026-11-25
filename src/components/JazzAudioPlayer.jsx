@@ -76,7 +76,7 @@ export default function JazzAudioPlayer() {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-xs sm:text-sm font-bold text-slate-100 truncate">
-                מוזיקת רקע (סקסופון איביזה וג&apos;אז)
+                מוזיקת רקע (סולו סקסופון · איביזה וג&apos;אז)
               </span>
               {isPlaying && (
                 <span className="inline-flex items-end gap-0.5 h-3" aria-hidden="true">
