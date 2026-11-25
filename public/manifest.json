@@ -1,0 +1,21 @@
+{
+  "name": "מעגל הקווינטות — אימון לנגני סקסופון",
+  "short_name": "מעגל הקווינטות",
+  "description": "מאמן אינטראקטיבי למעגל הקווינטות בעברית לנגני סקסופון — תרגול סולמות מז'ור ומינור, סימני היתק וטרנספוזיציה.",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#090c14",
+  "theme_color": "#090c14",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
