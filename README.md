@@ -9,8 +9,8 @@ A clean, responsive, dark-mode web application in **Hebrew (RTL)** for practicin
 ## ✨ Features
 
 ### 1. Three Interactive Quiz Modes (or All Mixed)
-- **Identify Scale from Key Signature:** Prompts for a Major or Minor scale given its exact number of sharps (`♯`) or flats (`♭`) (0–7), with a full clickable grid covering all 15 Major scales, 15 Minor scales, or all 30 scales (including enharmonic equivalents).
-- **Reverse Mode — Identify Key Signature Count:** Names a specific Major or Minor scale and asks how many sharps or flats it contains using a 15-button signature grid (`0`, `1♯–7♯`, `1♭–7♭`).
+- **Identify Scale from Key Signature:** Prompts for a Major or Minor scale given its exact number of sharps (`♯`) or flats (`♭`) (0–6), with a full clickable grid covering all 13 Major scales, 13 Minor scales, or all 26 scales (including `F♯`/`G♭` and `D♯m`/`E♭m`).
+- **Reverse Mode — Identify Key Signature Count:** Names a specific Major or Minor scale and asks how many sharps or flats it contains using a 13-button signature grid (`0`, `1♯–6♯`, `1♭–6♭`).
 - **Visual Circle of Fifths Mode:** Highlights a blank slice on an interactive SVG Circle of Fifths (outer Major ring or inner Relative Minor ring).
 - **All Mixed (Default):** Randomly alternates across all three question styles.
 
@@ -18,7 +18,7 @@ A clean, responsive, dark-mode web application in **Hebrew (RTL)** for practicin
 - **Saxophone Transposition Helper:** Optional toggle displaying transposed written keys after each answer for **E♭ Alto / Baritone Sax** or **B♭ Tenor / Soprano Sax**.
 - **Anti-Muscle-Memory Button Sorting:** Defaults to **Chromatic order** so you learn the key signatures rather than spatial button positions, with an optional toggle to sort by Circle of Fifths order.
 - **Hebrew Note Subtitles Toggle:** Show or hide Hebrew note names (`דו`, `רה`, `מי`, etc.) alongside standard LTR international scale notation (`C`, `F♯`, `E♭m`).
-- **Full Circle & Cheat Sheet Modal:** Quick-reference modal with both the complete labeled Circle of Fifths diagram and a full 15-Major / 15-Minor key signature table.
+- **Full Circle & Cheat Sheet Modal:** Quick-reference modal with both the complete labeled Circle of Fifths diagram and a full 13-Major / 13-Minor key signature table (0–6 sharps/flats).
 
 ### 3. Smart Learning, Audio & Mobile Support
 - **Spaced-Repetition Bias:** Scales you miss appear more frequently until answered correctly twice in a row.

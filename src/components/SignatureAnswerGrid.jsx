@@ -57,13 +57,13 @@ export default function SignatureAnswerGrid({ question, feedback, onAnswer }) {
         )}
       </div>
 
-      {/* Sharps Group (1# - 7#) */}
+      {/* Sharps Group (1# - 6#) */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
           <h3 className="text-xs font-bold text-amber-400">דיאזים (♯)</h3>
         </div>
-        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
           {SIGNATURE_OPTIONS.sharps.map((opt) =>
             renderButton(
               opt,
@@ -73,13 +73,13 @@ export default function SignatureAnswerGrid({ question, feedback, onAnswer }) {
         </div>
       </div>
 
-      {/* Flats Group (1b - 7b) */}
+      {/* Flats Group (1b - 6b) */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-sky-400" />
           <h3 className="text-xs font-bold text-sky-400">במולים (♭)</h3>
         </div>
-        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
           {SIGNATURE_OPTIONS.flats.map((opt) =>
             renderButton(
               opt,

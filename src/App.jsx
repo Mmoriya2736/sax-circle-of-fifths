@@ -348,7 +348,7 @@ export default function App() {
                     המסומן במעגל
                   </h2>
                   <p className="mt-1.5 text-xs text-slate-400">
-                    במיקומים אנהרמוניים (5, 6 או 7), בחירה בכל אחת מהחלופות תיחשב נכונה.
+                    במיקום האנהרמוני (שעה 6), בחירה ב-F♯ או ב-G♭ (או D♯m / E♭m) תיחשב נכונה.
                   </p>
                 </div>
               ) : question.mode === 'count' ? (

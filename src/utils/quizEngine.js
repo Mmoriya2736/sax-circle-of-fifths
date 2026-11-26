@@ -15,14 +15,14 @@ export const SIGNATURE_OPTIONS = {
     badge: '0',
     hebrewLabel: 'ללא סימני היתק',
   },
-  sharps: [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+  sharps: [1, 2, 3, 4, 5, 6].map((n) => ({
     id: `sharp-${n}`,
     accidentalType: 'sharp',
     accidentalCount: n,
     badge: `${n}♯`,
     hebrewLabel: n === 1 ? 'דיאז אחד' : `${n} דיאזים`,
   })),
-  flats: [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+  flats: [1, 2, 3, 4, 5, 6].map((n) => ({
     id: `flat-${n}`,
     accidentalType: 'flat',
     accidentalCount: n,
@@ -31,6 +31,8 @@ export const SIGNATURE_OPTIONS = {
   })),
 };
 
+const VALID_SCALE_IDS = new Set(ALL_SCALES.map((s) => s.id));
+
 export function loadPersistedData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -38,9 +40,13 @@ export function loadPersistedData() {
       return { bestStreak: 0, weakKeys: {} };
     }
     const parsed = JSON.parse(raw);
+    const rawWeak = parsed.weakKeys && typeof parsed.weakKeys === 'object' ? parsed.weakKeys : {};
+    const weakKeys = Object.fromEntries(
+      Object.entries(rawWeak).filter(([id]) => VALID_SCALE_IDS.has(id))
+    );
     return {
       bestStreak: Number(parsed.bestStreak) || 0,
-      weakKeys: parsed.weakKeys && typeof parsed.weakKeys === 'object' ? parsed.weakKeys : {},
+      weakKeys,
     };
   } catch {
     return { bestStreak: 0, weakKeys: {} };

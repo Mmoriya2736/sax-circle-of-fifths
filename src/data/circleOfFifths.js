@@ -1,6 +1,6 @@
 /**
- * Complete Key Signatures data model for all 15 Major scales and 15 Minor scales
- * covering 0-7 sharps (♯) and 0-7 flats (♭), including all enharmonic equivalents.
+ * Complete Key Signatures data model for all 13 standard Major scales and 13 Minor scales
+ * covering 0-6 sharps (♯) and 0-6 flats (♭), including the F♯/G♭ (6♯/6♭) enharmonic pair.
  */
 
 const NOTE_TO_HEBREW = {
@@ -186,30 +186,7 @@ export const SIGNATURE_ROWS = [
       notes: ['D♯', 'E♯', 'F♯', 'G♯', 'A♯', 'B', 'C♯'],
     },
   },
-  {
-    accidentalType: 'sharp',
-    accidentalCount: 7,
-    circlePosition: 7,
-    circleOrder: 7,
-    accidentals: ['F♯', 'C♯', 'G♯', 'D♯', 'A♯', 'E♯', 'B♯'],
-    major: {
-      id: 'maj-C#',
-      label: 'C♯',
-      hebrewShort: 'דו♯',
-      hebrewFull: "דו♯ מז'ור",
-      chromaticRank: 1,
-      notes: ['C♯', 'D♯', 'E♯', 'F♯', 'G♯', 'A♯', 'B♯'],
-    },
-    minor: {
-      id: 'min-A#m',
-      label: 'A♯m',
-      hebrewShort: 'לה♯ מינור',
-      hebrewFull: 'לה♯ מינור',
-      chromaticRank: 12,
-      notes: ['A♯', 'B♯', 'C♯', 'D♯', 'E♯', 'F♯', 'G♯'],
-    },
-  },
-  // 1b to 7b
+  // 1b to 6b
   {
     accidentalType: 'flat',
     accidentalCount: 1,
@@ -346,29 +323,6 @@ export const SIGNATURE_ROWS = [
       hebrewFull: 'מי♭ מינור',
       chromaticRank: 4,
       notes: ['E♭', 'F', 'G♭', 'A♭', 'B♭', 'C♭', 'D♭'],
-    },
-  },
-  {
-    accidentalType: 'flat',
-    accidentalCount: 7,
-    circlePosition: 5,
-    circleOrder: 8,
-    accidentals: ['B♭', 'E♭', 'A♭', 'D♭', 'G♭', 'C♭', 'F♭'],
-    major: {
-      id: 'maj-Cb',
-      label: 'C♭',
-      hebrewShort: 'דו♭',
-      hebrewFull: "דו♭ מז'ור",
-      chromaticRank: 14,
-      notes: ['C♭', 'D♭', 'E♭', 'F♭', 'G♭', 'A♭', 'B♭'],
-    },
-    minor: {
-      id: 'min-Abm',
-      label: 'A♭m',
-      hebrewShort: 'לה♭ מינור',
-      hebrewFull: 'לה♭ מינור',
-      chromaticRank: 10,
-      notes: ['A♭', 'B♭', 'C♭', 'D♭', 'E♭', 'F♭', 'G♭'],
     },
   },
 ];

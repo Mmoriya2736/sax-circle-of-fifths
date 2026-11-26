@@ -148,7 +148,7 @@ export default function CheatSheetModal({ isOpen, onClose, saxMode }) {
                 מעגל הקווינטות המלא וטבלת סולמות לעזרה
               </h2>
               <p className="text-xs text-slate-400">
-                עיון מהיר בכל 15 סולמות המז&apos;ור והמינור המקבילים
+                עיון מהיר בכל 13 סולמות המז&apos;ור והמינור המקבילים (0–6 דיאזים ובמולים)
               </p>
             </div>
           </div>
@@ -210,8 +210,8 @@ export default function CheatSheetModal({ isOpen, onClose, saxMode }) {
           ) : (
             <div className="space-y-5">
               {renderTable('ללא דיאזים או במולים (0)', 'text-slate-300', naturalRows)}
-              {renderTable('סולמות עם דיאזים (1♯ עד 7♯)', 'text-amber-400', sharpRows)}
-              {renderTable('סולמות עם במולים (1♭ עד 7♭)', 'text-sky-400', flatRows)}
+              {renderTable('סולמות עם דיאזים (1♯ עד 6♯)', 'text-amber-400', sharpRows)}
+              {renderTable('סולמות עם במולים (1♭ עד 6♭)', 'text-sky-400', flatRows)}
             </div>
           )}
         </div>
